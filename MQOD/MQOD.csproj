@@ -13,6 +13,7 @@
         <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>9</LangVersion>
+        <RunPostBuildEvent>Always</RunPostBuildEvent>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -48,6 +49,7 @@
         <Compile Include="Feature.cs" />
         <Compile Include="FeatureManager.cs" />
         <Compile Include="Features\ArmorySort.cs" />
+        <Compile Include="Features\BetterMinimap.cs" />
         <Compile Include="Features\ShopSort.cs" />
         <Compile Include="Features\SortedItemGrid.cs" />
         <Compile Include="Features\StashSort.cs" />
@@ -424,9 +426,6 @@
       </Reference>
       <Reference Include="UnityEngineInternals">
         <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\UnityEngineInternals.dll</HintPath>
-      </Reference>
-      <Reference Include="UnityExplorer.ML.Mono">
-        <HintPath>..\..\Death Must Die\Mods\UnityExplorer.ML.Mono.dll</HintPath>
       </Reference>
       <Reference Include="UniverseLib.Mono">
         <HintPath>..\..\Death Must Die\UserLibs\UniverseLib.Mono.dll</HintPath>

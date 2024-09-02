@@ -157,3 +157,4 @@
 /home/marc/RiderProjects/MQOD/MQOD/bin/Release/Mono.Security.dll
 /home/marc/RiderProjects/MQOD/MQOD/bin/Release/System.Configuration.dll
 /home/marc/RiderProjects/MQOD/MQOD/bin/Release/System.Security.dll
+/home/marc/RiderProjects/MQOD/MQOD/bin/Release/MonoMod.RuntimeDetour.dll

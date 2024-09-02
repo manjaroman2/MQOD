@@ -162,4 +162,5 @@
 	<s:String x:Key="/Default/Environment/AssemblyExplorer/XmlDocument/@EntryValue">&lt;AssemblyExplorer&gt;
   &lt;Assembly Path="/home/marc/RiderProjects/Death Must Die/Death Must Die_Data/Managed/Death.dll" /&gt;
   &lt;Assembly Path="/home/marc/RiderProjects/Death Must Die/Death Must Die_Data/Managed/SolidUtilities.dll" /&gt;
+  &lt;Assembly Path="/home/marc/RiderProjects/Death Must Die/Death Must Die_Data/Managed/Assembly-CSharp.dll" /&gt;
 &lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>

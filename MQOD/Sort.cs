@@ -48,6 +48,7 @@ namespace MQOD
             bitsLeft -= (int)ItemType._Count;
 
             //  - 41 bits for lowercase chars + [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O] in subtype  
+            // There's prob a smarter way 
 
             bitsLeft -= 26;
             foreach (int c in item.SubtypeCode)
