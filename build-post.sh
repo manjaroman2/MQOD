@@ -1,10 +1,15 @@
 #!/usr/bin/bash
 
+projpath="/home/marc/RiderProjects/MQOD"
+projassetpath="/home/marc/dev/MoreQODAssets"
+gamedir="/home/marc/RiderProjects/Death Must Die"
+
+# --- change this if you know what you're doing  
+
 game_name="Death Must Die"
 name="MQOD"
-source="/home/marc/RiderProjects/MQOD/MQOD/bin"
-asset="/home/marc/dev/MoreQODAssets/Assets/AssetBundles/moreqodassets"
-gamedir="/home/marc/RiderProjects/Death Must Die"
+source="${projpath}/MQOD/bin"
+asset="${projassetpath}/Assets/AssetBundles/moreqodassets"
 mods="${gamedir}/Mods"
 gameid="2334730" 
 
