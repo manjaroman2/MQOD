@@ -1,0 +1,19 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MQOD", "MQOD\MQOD.csproj", "{EBEC712D-5765-417A-8576-3454FF8118A6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		ReleaseZip|Any CPU = ReleaseZip|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EBEC712D-5765-417A-8576-3454FF8118A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBEC712D-5765-417A-8576-3454FF8118A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBEC712D-5765-417A-8576-3454FF8118A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBEC712D-5765-417A-8576-3454FF8118A6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBEC712D-5765-417A-8576-3454FF8118A6}.ReleaseZip|Any CPU.ActiveCfg = ReleaseZip|Any CPU
+		{EBEC712D-5765-417A-8576-3454FF8118A6}.ReleaseZip|Any CPU.Build.0 = ReleaseZip|Any CPU
+	EndGlobalSection
+EndGlobal
