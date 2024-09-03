@@ -17,14 +17,14 @@ namespace MQOD
 
         private readonly FeatureManager featureManager = new();
         public readonly PreferencesManager preferencesManager = new();
-        public ArmorySort ArmorySortInst;
+        public SortArmory SortArmoryInst;
         public BetterMinimap BetterMinimapInst;
         public bool IsRun;
         public MQOD_UI mqodUI;
         public ScreenManager ScreenManager;
-        public ShopSort ShopSortInst;
-        public SortedItemGrid SortedItemGridInst;
-        public StashSort StashSortInst;
+        public SortShop SortShopInst;
+        public SortItemGrid SortItemGridInst;
+        public SortStash SortStashInst;
         public UniverseLibHooks UniverseLibHooksInst;
 
         public override void OnInitializeMelon()
@@ -50,10 +50,10 @@ namespace MQOD
             mqodUI.init();
 
 
-            SortedItemGridInst = featureManager.addFeature<SortedItemGrid>();
-            StashSortInst = featureManager.addFeature<StashSort>();
-            ShopSortInst = featureManager.addFeature<ShopSort>();
-            ArmorySortInst = featureManager.addFeature<ArmorySort>();
+            SortItemGridInst = featureManager.addFeature<SortItemGrid>();
+            SortStashInst = featureManager.addFeature<SortStash>();
+            SortShopInst = featureManager.addFeature<SortShop>();
+            SortArmoryInst = featureManager.addFeature<SortArmory>();
             BetterMinimapInst = featureManager.addFeature<BetterMinimap>();
             featureManager.addHarmonyHooks();
 
@@ -117,10 +117,10 @@ namespace MQOD
             if (mqodUI.toggleAutoSortingKey != null &&
                 Input.GetKeyDown((KeyCode)mqodUI.toggleAutoSortingKey)) // middle click or S 
             {
-                SortedItemGridInst.toggleSorting();
+                SortItemGridInst.toggleSorting();
                 Color color;
                 string text;
-                if (SortedItemGridInst.isEnabled())
+                if (SortItemGridInst.isEnabled())
                 {
                     color = Color.green;
                     text = "enabled";
@@ -144,13 +144,13 @@ namespace MQOD
                 switch (ScreenManager.CurrentScreen)
                 {
                     case Screen_Stash:
-                        StashSortInst.sortSelectedPage();
+                        SortStashInst.sortSelectedPage();
                         break;
                     case Screen_Shop:
-                        ShopSort.sortShop();
+                        SortShop.sortShop();
                         break;
                     case Screen_Armory:
-                        ArmorySortInst.sort();
+                        SortArmoryInst.sort();
                         break;
                 }
 

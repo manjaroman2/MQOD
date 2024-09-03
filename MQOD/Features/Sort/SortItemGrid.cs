@@ -5,7 +5,7 @@ using MelonLoader;
 
 namespace MQOD
 {
-    public class SortedItemGrid : _Feature, _Hookable
+    public class SortItemGrid : _Feature, _Hookable
     {
         private bool enabled = true;
 
@@ -34,13 +34,13 @@ namespace MQOD
         private static void enableSorting()
         {
             HarmonyHelper.Patch(typeof(ItemGrid), nameof(ItemGrid.Populate), new[] { typeof(IEnumerable<Item>) },
-                postfixClazz: typeof(SortedItemGrid), postfixMethod: nameof(ItemGrid__Populate__Postfix));
+                postfixClazz: typeof(SortItemGrid), postfixMethod: nameof(ItemGrid__Populate__Postfix));
         }
 
         private static void disableSorting()
         {
             MQOD.Instance.HarmonyInstance.Unpatch(typeof(ItemGrid).GetMethod(nameof(ItemGrid.Populate)),
-                typeof(SortedItemGrid).GetMethod(nameof(ItemGrid__Populate__Postfix), AccessTools.all));
+                typeof(SortItemGrid).GetMethod(nameof(ItemGrid__Populate__Postfix), AccessTools.all));
         }
 
         private static void ItemGrid__Populate__Postfix(IEnumerable<Item> items, ref ItemGrid __instance)

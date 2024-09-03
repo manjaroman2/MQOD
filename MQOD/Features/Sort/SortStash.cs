@@ -5,16 +5,16 @@ using MelonLoader;
 
 namespace MQOD
 {
-    public class StashSort : _Feature, _Hookable
+    public class SortStash : _Feature, _Hookable
     {
         private ItemController_Stash StashItemController;
 
         public void addHarmonyHooks()
         {
             HarmonyHelper.Patch(typeof(GUI_Items_Stash), nameof(GUI_Items_Stash.Init), new[] { typeof(Profile) },
-                postfixClazz: typeof(StashSort), postfixMethod: nameof(GUI_Items_Stash__Init__Postfix));
+                postfixClazz: typeof(SortStash), postfixMethod: nameof(GUI_Items_Stash__Init__Postfix));
             HarmonyHelper.Patch(typeof(ItemController_Stash), "Transfer", new[] { typeof(ItemSlot) },
-                postfixClazz: typeof(StashSort), postfixMethod: nameof(ItemController_Stash__Transfer__Postfix));
+                postfixClazz: typeof(SortStash), postfixMethod: nameof(ItemController_Stash__Transfer__Postfix));
         }
 
 
@@ -67,14 +67,14 @@ namespace MQOD
         private static void GUI_Items_Stash__Init__Postfix(Profile profile,
             ref ItemController_Stash ____controller)
         {
-            MQOD.Instance.StashSortInst.StashItemController = ____controller;
+            MQOD.Instance.SortStashInst.StashItemController = ____controller;
             // addDropdown(____stashTabManager, GameObject.Find("GUI_Panel_Stash"));
         }
 
         private static void ItemController_Stash__Transfer__Postfix(ItemSlot slot,
             ItemController_Stash __instance)
         {
-            if (MQOD.Instance.SortedItemGridInst.isEnabled()) MQOD.Instance.StashSortInst.sortSelectedPage();
+            if (MQOD.Instance.SortItemGridInst.isEnabled()) MQOD.Instance.SortStashInst.sortSelectedPage();
         }
     }
 }
