@@ -1,6 +1,6 @@
 .idea/
-**/bin/Debug/
-**/bin/Release/
-**/obj/Debug/
-**/obj/Release/
+**/bin/Debug/*
+**/bin/Release/*
+**/obj/Debug/*
+**/obj/Release/*
 packages/
