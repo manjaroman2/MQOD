@@ -1,4 +1,5 @@
 using Death.App;
+using Death.Items;
 using Death.Run.UserInterface.Items;
 using HarmonyLib;
 using MelonLoader;
@@ -13,6 +14,8 @@ namespace MQOD
         {
             HarmonyHelper.Patch(typeof(GUI_Items_Stash), nameof(GUI_Items_Stash.Init), types: new[] { typeof(Profile) },
                 postfixClazz: typeof(StashSort), postfixMethod: nameof(GUI_Items_Stash__Init__Postfix));
+            HarmonyHelper.Patch(typeof(ItemController_Stash), "Transfer", types: new[] { typeof(ItemSlot) },
+                postfixClazz: typeof(StashSort), postfixMethod: nameof(ItemController_Stash__Transfer__Postfix));
         }
 
 
@@ -71,6 +74,14 @@ namespace MQOD
         {
             MQOD.Instance.StashSortInst.StashItemController = ____controller;
             // addDropdown(____stashTabManager, GameObject.Find("GUI_Panel_Stash"));
+        }
+        private static void ItemController_Stash__Transfer__Postfix(ItemSlot slot,
+            ItemController_Stash __instance)
+        {
+            if (MQOD.Instance.SortedItemGridInst.isEnabled())
+            {
+                MQOD.Instance.StashSortInst.sortSelectedPage();
+            }
         }
     }
 }

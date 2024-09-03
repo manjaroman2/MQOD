@@ -18,7 +18,7 @@ namespace MQOD
         public Image boundsImage;
         private FieldInfo boundsWidthAccessor;
 
-        private Vector2 rectTransform_anchorMin; 
+        private Vector2 rectTransform_anchorMin;
         private Vector2 rectTransform_anchorMax;
         private Vector2 rectTransform_pivot;
         private Vector2 boundsImageRectTransform_sizeDelta;
@@ -31,6 +31,7 @@ namespace MQOD
         private RectTransform rectTransform;
         private GUI_Minimap.Config config;
         public bool zoomedIn;
+
         public void init()
         {
             guiMinimap = Minimap.Get() as GUI_Minimap;
@@ -62,7 +63,8 @@ namespace MQOD
                 MelonLogger.Error("BetterMinimap: boundsWidthAccessor null");
                 return;
             }
-            initialized = true; 
+
+            initialized = true;
         }
 
         public void zoomOut()
@@ -74,7 +76,7 @@ namespace MQOD
             }
 
             config ??= ConfigManager.Get<UIConfig>().Minimap;
-            config.MapDimensionUnits += 10; 
+            config.MapDimensionUnits += 10;
         }
 
         public void zoomIn()
@@ -101,8 +103,8 @@ namespace MQOD
             {
                 // MelonLogger.Error("BetterMinimap: already zoomed in");
                 return;
-                
             }
+
             Img_Frame.SetActive(false);
 
             if (rectTransform == null) rectTransform = guiMinimap.GetComponent<RectTransform>();
@@ -112,7 +114,8 @@ namespace MQOD
             rectTransform.anchorMin = new Vector2(0.50f, 0.50f);
             rectTransform.anchorMax = new Vector2(0.50f, 0.50f);
             rectTransform.pivot = new Vector2(0.50f, 0.50f);
-            if (boundsImageRectTransform == null) boundsImageRectTransform = boundsImage.gameObject.GetComponent<RectTransform>();
+            if (boundsImageRectTransform == null)
+                boundsImageRectTransform = boundsImage.gameObject.GetComponent<RectTransform>();
             boundsImageRectTransform_sizeDelta = boundsImageRectTransform.sizeDelta;
             boundsImageRectTransform_pivot = boundsImageRectTransform.pivot;
             boundsImageRectTransform.pivot = new Vector2(0.50f, 0.50f);
@@ -123,7 +126,8 @@ namespace MQOD
             config_MapDimensionUnits = config.MapDimensionUnits;
             config.MapDimensionUnits *= scalar;
             boundsImage_color = boundsImage.color;
-            boundsImage.color = new Color(((Color) boundsImage_color).r, ((Color) boundsImage_color).g, ((Color) boundsImage_color).b, MQOD.Instance.minimapTransparency);
+            boundsImage.color = new Color(boundsImage_color.r, boundsImage_color.g, boundsImage_color.b,
+                MQOD.Instance.mqodUI.minimapTransparency);
             // if (outline == null)
             // {
             //     outline = boundsImage.gameObject.AddComponent<Outline>();
@@ -132,7 +136,7 @@ namespace MQOD
             //     outline.useGraphicAlpha = true;
             // }
             // outline.enabled = true;
-            
+
             zoomedIn = true;
         }
 
@@ -149,7 +153,7 @@ namespace MQOD
                 // MelonLogger.Error("BetterMinimap: not zoomed in");
                 return;
             }
-            
+
             Img_Frame.SetActive(true);
             rectTransform.anchorMin = rectTransform_anchorMin;
             rectTransform.anchorMax = rectTransform_anchorMax;
@@ -158,9 +162,9 @@ namespace MQOD
             boundsImageRectTransform.sizeDelta = boundsImageRectTransform_sizeDelta;
             boundsWidthAccessor.SetValue(guiMinimap, boundsWidthAccessor_GetValue);
             config.MapDimensionUnits = config_MapDimensionUnits;
-            if (boundsImage_color != null) boundsImage.color = (Color)boundsImage_color;
+            boundsImage.color = boundsImage_color;
             // outline.enabled = false;
-            
+
             zoomedIn = false;
         }
 

@@ -1,9 +1,14 @@
-﻿using Claw.UserInterface.Screens;
+﻿using System;
+using System.Collections.Generic;
+using Claw.UserInterface.Screens;
 using Death.TimesRealm;
 using Death.TimesRealm.UserInterface;
 using Death.UserInterface;
 using MelonLoader;
 using UnityEngine;
+using UnityEngine.UI;
+using UniverseLib.UI;
+using UniverseLib.UI.Panels;
 
 namespace MQOD
 {
@@ -15,91 +20,37 @@ namespace MQOD
         public ArmorySort ArmorySortInst;
         public SortedItemGrid SortedItemGridInst;
         public BetterMinimap BetterMinimapInst;
+        public UniverseLibHooks UniverseLibHooksInst;
         public bool IsRun;
         public ScreenManager ScreenManager;
 
-        public KeyCode? sortingKey
-        {
-            get => sortingKeyEntry.Value;
-            set => sortingKeyEntry.Value = value;
-        }
-
-        public KeyCode? toggleAutoSortingKey
-        {
-            get => toggleAutoSortingKeyEntry.Value;
-            set => toggleAutoSortingKeyEntry.Value = value;
-        }
-
-        public KeyCode? toggleUIKey
-        {
-            get => toggleUIKeyEntry.Value;
-            set => toggleUIKeyEntry.Value = value;
-        }
-
-        public KeyCode? minimapFullscreen
-        {
-            get => minimapFullscreenEntry.Value;
-            set => minimapFullscreenEntry.Value = value;
-        }
-
-        public KeyCode? minimapZoomOut
-        {
-            get => minimapZoomOutEntry.Value;
-            set => minimapZoomOutEntry.Value = value;
-        }
-
-        public KeyCode? minimapZoomIn
-        {
-            get => minimapZoomInEntry.Value;
-            set => minimapZoomInEntry.Value = value;
-        }
-
-        public MQOD_UI.Minimap_ZoomFunction MinimapZoomFunction
-        {
-            get => minimapZoomFunctionEntry.Value;
-            set => minimapZoomFunctionEntry.Value = value;
-        }
-
-        public float minimapTransparency
-        {
-            get => minimapTransparencyEntry.Value;
-            set => minimapTransparencyEntry.Value = value;
-        }
-
-        private MelonPreferences_Category Hotkeys;
-        private MelonPreferences_Entry<KeyCode?> sortingKeyEntry;
-        private MelonPreferences_Entry<KeyCode?> toggleAutoSortingKeyEntry;
-        private MelonPreferences_Entry<KeyCode?> toggleUIKeyEntry;
-        private MelonPreferences_Entry<KeyCode?> minimapFullscreenEntry;
-        private MelonPreferences_Entry<KeyCode?> minimapZoomOutEntry;
-        private MelonPreferences_Entry<KeyCode?> minimapZoomInEntry;
-        private MelonPreferences_Category Settings;
-        private MelonPreferences_Entry<MQOD_UI.Minimap_ZoomFunction> minimapZoomFunctionEntry;
-        private MelonPreferences_Entry<float> minimapTransparencyEntry;
 
         private readonly FeatureManager featureManager = new();
-        private MQOD_UI mqodUI;
+        public readonly PreferencesManager preferencesManager = new();
+        public MQOD_UI mqodUI;
 
         public override void OnInitializeMelon()
         {
             MelonLogger.Msg("Hello from MoreQOD!");
             Instance = this;
+
+            preferencesManager.init();
+
+            UniverseLibHooksInst = new UniverseLibHooks(new Dictionary<Type, Action<PanelBase>>()
+            {
+                {
+                    typeof(MQOD_UI.CustomSortPanel), (pBase =>
+                    {
+                        MQOD_UI.CustomSortPanel customSortPanel = (MQOD_UI.CustomSortPanel)pBase;
+                        customSortPanel.loadVariables(new List<string>
+                            { "Uniqueness", "Rarity", "Tier", "Type", "Subtype" });
+                    })
+                }
+            });
+            UniverseLibHooksInst.addHarmonyHooks();
+
             mqodUI = new MQOD_UI();
             mqodUI.init();
-
-            Hotkeys = MelonPreferences.CreateCategory("Hotkeys");
-            sortingKeyEntry = Hotkeys.CreateEntry<KeyCode?>("sortingKey", KeyCode.S);
-            toggleAutoSortingKeyEntry = Hotkeys.CreateEntry<KeyCode?>("toggleAutoSortingKey", KeyCode.P);
-            toggleUIKeyEntry = Hotkeys.CreateEntry<KeyCode?>("toggleUIKeyEntry", KeyCode.U);
-            minimapFullscreenEntry = Hotkeys.CreateEntry<KeyCode?>("minimapFullscreenEntry", KeyCode.Tab);
-            minimapZoomOutEntry = Hotkeys.CreateEntry<KeyCode?>("minimapZoomOutEntry", KeyCode.Minus);
-            minimapZoomInEntry = Hotkeys.CreateEntry<KeyCode?>("minimapZoomInEntry", KeyCode.Equals);
-            Settings = MelonPreferences.CreateCategory("Settings");
-            minimapZoomFunctionEntry =
-                Settings.CreateEntry("minimapZoomFunctionEntry",
-                    MQOD_UI.Minimap_ZoomFunction.HOLD);
-            minimapTransparencyEntry = Settings.CreateEntry("minimapTransparencyEntry", 0.3f); 
-            
 
 
             SortedItemGridInst = featureManager.addFeature<SortedItemGrid>();
@@ -108,6 +59,8 @@ namespace MQOD
             ArmorySortInst = featureManager.addFeature<ArmorySort>();
             BetterMinimapInst = featureManager.addFeature<BetterMinimap>();
             featureManager.addHarmonyHooks();
+
+
             HarmonyHelper.Patch(typeof(Facade_Lobby), nameof(Facade_Lobby.Init), new[] { typeof(ILobbyGameState) },
                 postfixClazz: typeof(MQOD), postfixMethod: nameof(Facade_Lobby__Init__Postfix));
         }
@@ -142,29 +95,30 @@ namespace MQOD
             //     if (IsRun) Player.Instance.Entity.Invulnerable.AddStack();
             // }
 
-            if (minimapFullscreen != null)
+            if (mqodUI.minimapFullscreenKey != null)
             {
-                switch (MinimapZoomFunction)
+                if (!mqodUI.MinimapZoomFunction)
                 {
-                    case MQOD_UI.Minimap_ZoomFunction.HOLD:
-                        if (Input.GetKeyDown((KeyCode)minimapFullscreen)) BetterMinimapInst.fullscreenMinimap();
-                        else if (Input.GetKeyUp((KeyCode)minimapFullscreen)) BetterMinimapInst.resetFullscreen();
-                        break;
-                    case MQOD_UI.Minimap_ZoomFunction.TOGGLE:
-                        if (Input.GetKeyDown((KeyCode)minimapFullscreen))
-                        {
-                            if (!BetterMinimapInst.zoomedIn) BetterMinimapInst.fullscreenMinimap();
-                            else BetterMinimapInst.resetFullscreen();
-                        }
-
-                        break;
+                    if (Input.GetKeyDown((KeyCode)mqodUI.minimapFullscreenKey)) BetterMinimapInst.fullscreenMinimap();
+                    else if (Input.GetKeyUp((KeyCode)mqodUI.minimapFullscreenKey)) BetterMinimapInst.resetFullscreen();
+                }
+                else
+                {
+                    if (Input.GetKeyDown((KeyCode)mqodUI.minimapFullscreenKey))
+                    {
+                        if (!BetterMinimapInst.zoomedIn) BetterMinimapInst.fullscreenMinimap();
+                        else BetterMinimapInst.resetFullscreen();
+                    }
                 }
             }
 
-            if (minimapZoomOut != null && Input.GetKeyDown((KeyCode)minimapZoomOut)) BetterMinimapInst.zoomOut();
-            if (minimapZoomIn != null && Input.GetKeyDown((KeyCode)minimapZoomIn)) BetterMinimapInst.zoomIn();
+            if (mqodUI.minimapZoomOutKey != null && Input.GetKeyDown((KeyCode)mqodUI.minimapZoomOutKey))
+                BetterMinimapInst.zoomOut();
+            if (mqodUI.minimapZoomInKey != null && Input.GetKeyDown((KeyCode)mqodUI.minimapZoomInKey))
+                BetterMinimapInst.zoomIn();
 
-            if (toggleAutoSortingKey != null && Input.GetKeyDown((KeyCode)toggleAutoSortingKey)) // middle click or S 
+            if (mqodUI.toggleAutoSortingKey != null &&
+                Input.GetKeyDown((KeyCode)mqodUI.toggleAutoSortingKey)) // middle click or S 
             {
                 SortedItemGridInst.toggleSorting();
                 Color color;
@@ -189,7 +143,7 @@ namespace MQOD
                 MelonLogger.Msg($"Item grid sorting: {text}");
             }
 
-            if (sortingKey != null && Input.GetKeyDown((KeyCode)sortingKey) && ScreenManager != null)
+            if (mqodUI.sortingKey != null && Input.GetKeyDown((KeyCode)mqodUI.sortingKey) && ScreenManager != null)
             {
                 switch (ScreenManager.CurrentScreen)
                 {
@@ -206,8 +160,8 @@ namespace MQOD
             }
 
 
-            if (toggleUIKey != null && mqodUI.initialized && !mqodUI.HotkeyPanel.toggleUITimer.Enabled &&
-                Input.GetKeyDown((KeyCode)toggleUIKey))
+            if (mqodUI.toggleUIKey != null && mqodUI.initialized && !mqodUI.HotkeyPanel.toggleUITimer.Enabled &&
+                Input.GetKeyDown((KeyCode)mqodUI.toggleUIKey))
             {
                 MelonLogger.Msg("Toggle UI");
                 mqodUI.UIBase.Enabled = !mqodUI.UIBase.Enabled;

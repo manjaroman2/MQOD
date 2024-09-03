@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
@@ -16,16 +18,66 @@ namespace MQOD
     public class MQOD_UI
     {
         public UIBase UIBase;
-        public MyPanel HotkeyPanel;
+        public CustomHotkeyPanel HotkeyPanel;
+        public CustomSortPanel SortPanel;
+        public int fontSize { get; set; }
         public bool initialized;
 
-        private const float startupDelay = 1f;
-
-        public enum Minimap_ZoomFunction
+        public KeyCode? sortingKey
         {
-            HOLD,
-            TOGGLE
+            get => MQOD.Instance.preferencesManager.sortingKeyEntry.Value;
+            set => MQOD.Instance.preferencesManager.sortingKeyEntry.Value = value;
         }
+
+        public KeyCode? toggleAutoSortingKey
+        {
+            get => MQOD.Instance.preferencesManager.toggleAutoSortingKeyEntry.Value;
+            set => MQOD.Instance.preferencesManager.toggleAutoSortingKeyEntry.Value = value;
+        }
+
+        public KeyCode? toggleUIKey
+        {
+            get => MQOD.Instance.preferencesManager.toggleUIKeyEntry.Value;
+            set => MQOD.Instance.preferencesManager.toggleUIKeyEntry.Value = value;
+        }
+
+        public KeyCode? minimapFullscreenKey
+        {
+            get => MQOD.Instance.preferencesManager.minimapFullscreenKeyEntry.Value;
+            set => MQOD.Instance.preferencesManager.minimapFullscreenKeyEntry.Value = value;
+        }
+
+        public KeyCode? minimapZoomOutKey
+        {
+            get => MQOD.Instance.preferencesManager.minimapZoomOutKeyEntry.Value;
+            set => MQOD.Instance.preferencesManager.minimapZoomOutKeyEntry.Value = value;
+        }
+
+        public KeyCode? minimapZoomInKey
+        {
+            get => MQOD.Instance.preferencesManager.minimapZoomInKeyEntry.Value;
+            set => MQOD.Instance.preferencesManager.minimapZoomInKeyEntry.Value = value;
+        }
+
+        public bool MinimapZoomFunction
+        {
+            get => MQOD.Instance.preferencesManager.minimapZoomFunctionEntry.Value;
+            set => MQOD.Instance.preferencesManager.minimapZoomFunctionEntry.Value = value;
+        }
+
+        public float minimapTransparency
+        {
+            get => MQOD.Instance.preferencesManager.minimapTransparencyEntry.Value;
+            set => MQOD.Instance.preferencesManager.minimapTransparencyEntry.Value = value;
+        }
+
+        public bool customSortSettingsExpanded
+        {
+            get => MQOD.Instance.preferencesManager.customSortSettingsExpandedEntry.Value;
+            set => MQOD.Instance.preferencesManager.customSortSettingsExpandedEntry.Value = value;
+        }
+
+        private const float startupDelay = 1f;
 
         public void init()
         {
@@ -40,71 +92,28 @@ namespace MQOD
             Universe.Init(startupDelay, OnInitialized, LogHandler, config);
         }
 
-        public class MyPanel : PanelBase
+        public abstract class MQOD_PanelBase : PanelBase
         {
-            public MyPanel(UIBase owner) : base(owner)
+            protected int fontSize;
+
+            protected MQOD_PanelBase(UIBase owner) : base(owner)
             {
             }
-
-            public override string Name => "MQOD - Hotkeys";
-            public override int MinWidth => 100;
-            public override int MinHeight => 200;
-            public override Vector2 DefaultAnchorMin => new(0.00f, 0.00f);
-            public override Vector2 DefaultAnchorMax => new(0.20f, 0.30f);
-            public override bool CanDragAndResize => true;
-            public int fontSize = 18;
-
-            public readonly Timer toggleUITimer = new(1000);
-            public Text toggleAutoSortingLabel;
-
 
             protected override void ConstructPanelContent()
             {
-                UIFactory.SetLayoutGroup<VerticalLayoutGroup>(ContentRoot);
-                createHotkey(0, "UIToggle", () => MQOD.Instance.toggleUIKey, code => MQOD.Instance.toggleUIKey = code,
-                    toggleUITimer);
-                createHotkey(1, "Sorting", () => MQOD.Instance.sortingKey, code => MQOD.Instance.sortingKey = code);
-                toggleAutoSortingLabel = createHotkey(2, "toggleAutoSorting [enabled]",
-                    () => MQOD.Instance.toggleAutoSortingKey, code => MQOD.Instance.toggleAutoSortingKey = code);
-                createHotkey(3, "Fullscreen Minimap", () => MQOD.Instance.minimapFullscreen,
-                    code => MQOD.Instance.minimapFullscreen = code);
-                createHotkey(4, "minimapZoomOut", () => MQOD.Instance.minimapZoomOut,
-                    code => MQOD.Instance.minimapZoomOut = code);
-                createHotkey(5, "minimapZoomIn", () => MQOD.Instance.minimapZoomIn,
-                    code => MQOD.Instance.minimapZoomIn = code);
-
-                createSwitch(6, "Minimap Hold/Toggle", Color.gray, Color.gray, () =>
-                    {
-                        return MQOD.Instance.MinimapZoomFunction switch
-                        {
-                            Minimap_ZoomFunction.HOLD => "Hold",
-                            Minimap_ZoomFunction.TOGGLE => "Toggle",
-                            _ => null
-                        };
-                    }, () =>
-                    {
-                        MQOD.Instance.MinimapZoomFunction = MQOD.Instance.MinimapZoomFunction switch
-                        {
-                            Minimap_ZoomFunction.HOLD => Minimap_ZoomFunction.TOGGLE,
-                            Minimap_ZoomFunction.TOGGLE => Minimap_ZoomFunction.HOLD,
-                            _ => MQOD.Instance.MinimapZoomFunction
-                        };
-                    }
-                );
-
-                createSlider(7, "Minimap opacity", 0.01f, 1.00f, f =>
+                fontSize = MQOD.Instance.mqodUI.fontSize;
+                Text TitleBarText = ContentRoot.GetComponentInChildren<Text>();
+                if (TitleBarText != null)
                 {
-                    MQOD.Instance.minimapTransparency = f;
-                    if (MQOD.Instance.BetterMinimapInst.initialized && MQOD.Instance.BetterMinimapInst.zoomedIn)
-                    {  
-                        Color boundsImage_color = MQOD.Instance.BetterMinimapInst.boundsImage_color;
-                        MQOD.Instance.BetterMinimapInst.boundsImage.color = new Color(boundsImage_color.r,
-                            boundsImage_color.g, boundsImage_color.b, MQOD.Instance.minimapTransparency);   
-                    }
-                }, () => MQOD.Instance.minimapTransparency);
+                    TitleBarText.fontSize = fontSize;
+                    TitleBar.GetComponent<HorizontalLayoutGroup>().childForceExpandWidth = true;
+                }
             }
 
-            private Text createHotkey(int i, string hotkeyLabel, Func<KeyCode?> keyCodeGetter,
+
+            protected Text createHotkey(int i, string hotkeyLabel,
+                Func<KeyCode?> keyCodeGetter,
                 Action<KeyCode?> keyCodeSetter, Timer keyTimout = null)
             {
                 GameObject row1 = UIFactory.CreateHorizontalGroup(ContentRoot, $"Row{i}", false, false, true, true, 20,
@@ -120,7 +129,7 @@ namespace MQOD
                 {
                     mode = Navigation.Mode.None
                 };
-                UIFactory.SetLayoutElement(Hotkey.GameObject, minWidth: 75, minHeight: 25, flexibleWidth: 0);
+                UIFactory.SetLayoutElement(Hotkey.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 0);
                 Hotkey.OnClick += () =>
                 {
                     MelonLogger.Msg("Clicked!");
@@ -150,8 +159,9 @@ namespace MQOD
                 }
             }
 
-            private void createSwitch(int i, string switchLabel, Color colorState1, Color colorState2,
-                Func<string> stateGetter, Action stateToggle)
+
+            protected void createSwitch(int i, string switchLabel, Color colorState1, Color colorState2,
+                Func<bool> stateGetter, Action stateToggle, Func<string> stateString)
             {
                 GameObject row1 = UIFactory.CreateHorizontalGroup(ContentRoot, $"Row{i}", false, false, true, true, 20,
                     bgColor: new Color(1f, 1f, 1f, 0.0f));
@@ -160,7 +170,7 @@ namespace MQOD
                 HotkeyLabel.fontSize = fontSize;
                 HotkeyLabel.color = colorState1;
                 UIFactory.SetLayoutElement(HotkeyLabel.gameObject, minWidth: 25, minHeight: 25, flexibleWidth: 1);
-                ButtonRef Switch = UIFactory.CreateButton(row1, $"{switchLabel}Switch", stateGetter());
+                ButtonRef Switch = UIFactory.CreateButton(row1, $"{switchLabel}Switch", stateString());
                 UIFactory.SetLayoutElement(Switch.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 0);
                 Switch.Component.GetComponentInChildren<Text>().fontSize = fontSize;
                 Switch.Component.navigation = new Navigation
@@ -170,11 +180,13 @@ namespace MQOD
                 Switch.OnClick += () =>
                 {
                     stateToggle();
-                    Switch.ButtonText.text = stateGetter();
+                    Switch.ButtonText.text = stateString();
                 };
             }
 
-            private void createSlider(int i, string label, float minValue, float maxValue, Action<float> onValueChanged, Func<float> valueGetter)
+            protected void createSlider(int i, string label, float minValue, float maxValue,
+                Action<float> onValueChanged,
+                Func<float> valueGetter)
             {
                 GameObject row = UIFactory.CreateHorizontalGroup(ContentRoot, $"Row{i}", false, false, true, true, 20,
                     bgColor: new Color(1f, 1f, 1f, 0.0f));
@@ -188,7 +200,7 @@ namespace MQOD
                 slider.minValue = minValue;
                 slider.maxValue = maxValue;
                 slider.value = valueGetter();
-                slider.onValueChanged.AddListener((f) =>
+                slider.onValueChanged.AddListener(f =>
                 {
                     Label.text = $"{label}: {valueGetter():0.00}";
                     onValueChanged(f);
@@ -199,9 +211,8 @@ namespace MQOD
                 };
             }
 
-            private void createTextEntry(int i, string label)
+            protected void createTextEntry(int i, string label)
             {
-                
                 GameObject row = UIFactory.CreateHorizontalGroup(ContentRoot, $"Row{i}", false, false, true, true, 20,
                     bgColor: new Color(1f, 1f, 1f, 0.0f));
 
@@ -212,6 +223,120 @@ namespace MQOD
             }
         }
 
+        public class CustomHotkeyPanel : MQOD_PanelBase
+        {
+            public CustomHotkeyPanel(UIBase owner) : base(owner)
+            {
+            }
+
+            public override string Name => "MQOD - Hotkeys";
+            public override int MinWidth => 300;
+            public override int MinHeight => 500;
+            public override Vector2 DefaultAnchorMin => new(0.10f, 0.90f);
+            public override Vector2 DefaultAnchorMax => new(0.10f, 0.90f);
+            public override bool CanDragAndResize => true;
+
+            public readonly Timer toggleUITimer = new(1000);
+            public Text toggleAutoSortingLabel;
+
+            protected override void ConstructPanelContent()
+            {
+                base.ConstructPanelContent();
+                UIFactory.SetLayoutGroup<VerticalLayoutGroup>(ContentRoot, childControlWidth: true,
+                    childControlHeight: true, forceHeight: false, forceWidth: false);
+                createHotkey(0, "UIToggle", () => MQOD.Instance.mqodUI.toggleUIKey,
+                    code => MQOD.Instance.mqodUI.toggleUIKey = code,
+                    toggleUITimer);
+                createHotkey(1, "Sorting", () => MQOD.Instance.mqodUI.sortingKey,
+                    code => MQOD.Instance.mqodUI.sortingKey = code);
+                toggleAutoSortingLabel = createHotkey(2, "toggleAutoSorting [enabled]",
+                    () => MQOD.Instance.mqodUI.toggleAutoSortingKey,
+                    code => MQOD.Instance.mqodUI.toggleAutoSortingKey = code);
+                createSwitch(3, "Custom Sort Settings", Color.gray, Color.yellow,
+                    () => MQOD.Instance.mqodUI.customSortSettingsExpanded,
+                    () =>
+                    {
+                        MQOD.Instance.mqodUI.customSortSettingsExpanded =
+                            !MQOD.Instance.mqodUI.customSortSettingsExpanded;
+                        MQOD.Instance.mqodUI.SortPanel.Enabled = MQOD.Instance.mqodUI.customSortSettingsExpanded;
+                    },
+                    () => MQOD.Instance.mqodUI.customSortSettingsExpanded ? "Expanded" : "Hidden");
+                createHotkey(4, "Fullscreen Minimap", () => MQOD.Instance.mqodUI.minimapFullscreenKey,
+                    code => MQOD.Instance.mqodUI.minimapFullscreenKey = code);
+                createHotkey(5, "minimapZoomOut", () => MQOD.Instance.mqodUI.minimapZoomOutKey,
+                    code => MQOD.Instance.mqodUI.minimapZoomOutKey = code);
+                createHotkey(6, "minimapZoomIn", () => MQOD.Instance.mqodUI.minimapZoomInKey,
+                    code => MQOD.Instance.mqodUI.minimapZoomInKey = code);
+
+                createSwitch(7, "Minimap Hold/Toggle", Color.gray, Color.gray,
+                    () => MQOD.Instance.mqodUI.MinimapZoomFunction,
+                    () => MQOD.Instance.mqodUI.MinimapZoomFunction = !MQOD.Instance.mqodUI.MinimapZoomFunction,
+                    () => MQOD.Instance.mqodUI.MinimapZoomFunction ? "Hold" : "Toggle");
+
+                createSlider(8, "Minimap opacity", 0.01f, 1.00f, f =>
+                {
+                    MQOD.Instance.mqodUI.minimapTransparency = f;
+                    if (MQOD.Instance.BetterMinimapInst.initialized && MQOD.Instance.BetterMinimapInst.zoomedIn)
+                    {
+                        Color boundsImage_color = MQOD.Instance.BetterMinimapInst.boundsImage_color;
+                        MQOD.Instance.BetterMinimapInst.boundsImage.color = new Color(boundsImage_color.r,
+                            boundsImage_color.g, boundsImage_color.b, MQOD.Instance.mqodUI.minimapTransparency);
+                    }
+                }, () => MQOD.Instance.mqodUI.minimapTransparency);
+            }
+        }
+
+        public class CustomSortPanel : MQOD_PanelBase
+        {
+            public List<string> SortPanelEntries;
+
+            public CustomSortPanel(UIBase owner) : base(owner)
+            {
+            }
+
+            public override string Name => "MQOD - Custom Sort Settings";
+            public override int MinWidth => 300;
+            public override int MinHeight => 500;
+            public override Vector2 DefaultAnchorMin => new(0.10f, 0.90f);
+            public override Vector2 DefaultAnchorMax => new(0.10f, 0.90f);
+            public override bool CanDragAndResize => true;
+
+            protected override void ConstructPanelContent()
+            {
+                base.ConstructPanelContent();
+                UIFactory.SetLayoutGroup<VerticalLayoutGroup>(ContentRoot, childControlWidth: true,
+                    childControlHeight: true, forceWidth: false, forceHeight: false,
+                    childAlignment: TextAnchor.UpperCenter,
+                    spacing: 5, padLeft: 20, padRight: 20, padTop: 0, padBottom: 20);
+
+                List<List<object>> dragControllers = new ();
+                foreach (Text text in SortPanelEntries.Select(entry =>
+                             UIFactory.CreateLabel(ContentRoot, entry, entry, fontSize: fontSize)))
+                {
+                    DragController daDragController = text.gameObject.AddComponent<DragController>();
+                    daDragController.currentTransform = text.rectTransform;
+                    dragControllers.Add(new List<object>{daDragController, text});
+                    
+                    UIFactory.SetLayoutElement(text.gameObject, minWidth: 25, minHeight: 25, flexibleWidth: 1);
+                }
+                foreach (List<object> list in dragControllers)
+                {
+                    DragController dragController = (DragController)list[0];
+                    Text text = (Text)list[1];
+                    
+                    dragController.callback = () =>
+                    {
+                        MelonLogger.Msg("Hello from callback: " + text.text + " index: " + text.transform.GetSiblingIndex());
+                        
+                    };
+                }
+            }
+
+            public void loadVariables(List<string> entries)
+            {
+                SortPanelEntries = entries;
+            }
+        }
 
         private void UiUpdate()
         {
@@ -220,7 +345,12 @@ namespace MQOD
         private void OnInitialized()
         {
             UIBase = UniversalUI.RegisterUI("mj.MQOD", UiUpdate);
-            HotkeyPanel = new MyPanel(UIBase);
+            HotkeyPanel = new CustomHotkeyPanel(UIBase);
+            SortPanel = new CustomSortPanel(UIBase)
+            {
+                Enabled = MQOD.Instance.mqodUI.customSortSettingsExpanded
+            };
+
             CanvasScaler canvasScaler = UIBase.Canvas.gameObject.AddComponent<CanvasScaler>();
             if (canvasScaler != null) canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             UIBase.Enabled = true;
