@@ -10,9 +10,18 @@ namespace MQOD
     {
         private readonly Dictionary<Type, Action<PanelBase>> ConstructorPrefixAction;
 
-        public UniverseLibHooks(Dictionary<Type, Action<PanelBase>> constructorPrefixAction)
+        public UniverseLibHooks()
         {
-            ConstructorPrefixAction = constructorPrefixAction;
+            ConstructorPrefixAction = new Dictionary<Type, Action<PanelBase>>
+            {
+                {
+                    typeof(PanelSort), pBase =>
+                    {
+                        PanelSort panelSort = (PanelSort)pBase;
+                        panelSort.loadVariables(MQOD.Instance.preferencesManager.customSortOrderingEntry.Value);
+                    }
+                }
+            };
         }
 
         public void addHarmonyHooks()

@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Claw.UserInterface.Screens;
+﻿using Claw.UserInterface.Screens;
 using Death.TimesRealm;
 using Death.TimesRealm.UserInterface;
 using Death.UserInterface;
 using MelonLoader;
 using UnityEngine;
-using UniverseLib.UI.Panels;
 
 namespace MQOD
 {
@@ -17,14 +14,14 @@ namespace MQOD
 
         private readonly FeatureManager featureManager = new();
         public readonly PreferencesManager preferencesManager = new();
-        public SortArmory SortArmoryInst;
         public BetterMinimap BetterMinimapInst;
         public bool IsRun;
-        public MQOD_UI mqodUI;
         public ScreenManager ScreenManager;
-        public SortShop SortShopInst;
+        public SortArmory SortArmoryInst;
         public SortItemGrid SortItemGridInst;
+        public SortShop SortShopInst;
         public SortStash SortStashInst;
+        public UIMQOD UI;
         public UniverseLibHooks UniverseLibHooksInst;
 
         public override void OnInitializeMelon()
@@ -34,21 +31,11 @@ namespace MQOD
 
             preferencesManager.init();
 
-            UniverseLibHooksInst = new UniverseLibHooks(new Dictionary<Type, Action<PanelBase>>
-            {
-                {
-                    typeof(MQOD_UI.CustomSortPanel), pBase =>
-                    {
-                        MQOD_UI.CustomSortPanel customSortPanel = (MQOD_UI.CustomSortPanel)pBase;
-                        customSortPanel.loadVariables(Instance.preferencesManager.customSortOrderingEntry.Value);
-                    }
-                }
-            });
+            UniverseLibHooksInst = new UniverseLibHooks();
             UniverseLibHooksInst.addHarmonyHooks();
 
-            mqodUI = new MQOD_UI();
-            mqodUI.init();
-
+            UI = new UIMQOD();
+            UI.init();
 
             SortItemGridInst = featureManager.addFeature<SortItemGrid>();
             SortStashInst = featureManager.addFeature<SortStash>();
@@ -92,16 +79,16 @@ namespace MQOD
             //     if (IsRun) Player.Instance.Entity.Invulnerable.AddStack();
             // }
 
-            if (mqodUI.minimapFullscreenKey != null)
+            if (UI.minimapFullscreenKey != null)
             {
-                if (!mqodUI.MinimapZoomFunction)
+                if (!UI.MinimapZoomFunction)
                 {
-                    if (Input.GetKeyDown((KeyCode)mqodUI.minimapFullscreenKey)) BetterMinimapInst.fullscreenMinimap();
-                    else if (Input.GetKeyUp((KeyCode)mqodUI.minimapFullscreenKey)) BetterMinimapInst.resetFullscreen();
+                    if (Input.GetKeyDown((KeyCode)UI.minimapFullscreenKey)) BetterMinimapInst.fullscreenMinimap();
+                    else if (Input.GetKeyUp((KeyCode)UI.minimapFullscreenKey)) BetterMinimapInst.resetFullscreen();
                 }
                 else
                 {
-                    if (Input.GetKeyDown((KeyCode)mqodUI.minimapFullscreenKey))
+                    if (Input.GetKeyDown((KeyCode)UI.minimapFullscreenKey))
                     {
                         if (!BetterMinimapInst.zoomedIn) BetterMinimapInst.fullscreenMinimap();
                         else BetterMinimapInst.resetFullscreen();
@@ -109,13 +96,13 @@ namespace MQOD
                 }
             }
 
-            if (mqodUI.minimapZoomOutKey != null && Input.GetKeyDown((KeyCode)mqodUI.minimapZoomOutKey))
+            if (UI.minimapZoomOutKey != null && Input.GetKeyDown((KeyCode)UI.minimapZoomOutKey))
                 BetterMinimapInst.zoomOut();
-            if (mqodUI.minimapZoomInKey != null && Input.GetKeyDown((KeyCode)mqodUI.minimapZoomInKey))
+            if (UI.minimapZoomInKey != null && Input.GetKeyDown((KeyCode)UI.minimapZoomInKey))
                 BetterMinimapInst.zoomIn();
 
-            if (mqodUI.toggleAutoSortingKey != null &&
-                Input.GetKeyDown((KeyCode)mqodUI.toggleAutoSortingKey)) // middle click or S 
+            if (UI.toggleAutoSortingKey != null &&
+                Input.GetKeyDown((KeyCode)UI.toggleAutoSortingKey)) // middle click or S 
             {
                 SortItemGridInst.toggleSorting();
                 Color color;
@@ -131,16 +118,16 @@ namespace MQOD
                     text = "disabled";
                 }
 
-                if (mqodUI.HotkeyPanel.toggleAutoSortingLabel != null)
+                if (UI.Hotkey.toggleAutoSortingLabel != null)
                 {
-                    mqodUI.HotkeyPanel.toggleAutoSortingLabel.color = color;
-                    mqodUI.HotkeyPanel.toggleAutoSortingLabel.text = $"toggleAutoSorting [{text}]";
+                    UI.Hotkey.toggleAutoSortingLabel.color = color;
+                    UI.Hotkey.toggleAutoSortingLabel.text = $"toggleAutoSorting [{text}]";
                 }
 
                 MelonLogger.Msg($"Item grid sorting: {text}");
             }
 
-            if (mqodUI.sortingKey != null && Input.GetKeyDown((KeyCode)mqodUI.sortingKey) && ScreenManager != null)
+            if (UI.sortingKey != null && Input.GetKeyDown((KeyCode)UI.sortingKey) && ScreenManager != null)
                 switch (ScreenManager.CurrentScreen)
                 {
                     case Screen_Stash:
@@ -155,11 +142,11 @@ namespace MQOD
                 }
 
 
-            if (mqodUI.toggleUIKey != null && mqodUI.initialized && !mqodUI.HotkeyPanel.toggleUITimer.Enabled &&
-                Input.GetKeyDown((KeyCode)mqodUI.toggleUIKey))
+            if (UI.toggleUIKey != null && UI.initialized && !UI.Hotkey.toggleUITimer.Enabled &&
+                Input.GetKeyDown((KeyCode)UI.toggleUIKey))
             {
                 MelonLogger.Msg("Toggle UI");
-                mqodUI.UIBase.Enabled = !mqodUI.UIBase.Enabled;
+                UI.UIBase.Enabled = !UI.UIBase.Enabled;
             }
         }
 

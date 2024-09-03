@@ -4,7 +4,7 @@ using UnityEngine.EventSystems;
 
 namespace MQOD
 {
-    public class DragController : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
+    public class ComponentDragController : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
     {
         public RectTransform currentTransform;
         public Action callback;

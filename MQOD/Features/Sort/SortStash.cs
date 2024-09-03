@@ -26,7 +26,7 @@ namespace MQOD
                 return;
             }
 
-            if (MQOD.Instance.mqodUI.SortPanel.SortOrdering.sortItemGrid(StashItemController.SelectedPage))
+            if (MQOD.Instance.UI.Sort.SortOrdering.sortItemGrid(StashItemController.SelectedPage))
                 MelonLogger.Msg("Sorting Page=" + StashItemController.SelectedPage);
             else
                 MelonLogger.Msg("Nothing to sort :)");
