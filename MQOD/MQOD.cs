@@ -82,7 +82,7 @@ namespace MQOD
 
         public override void OnInitializeMelon()
         {
-            MelonLogger.Msg("Hello from MoreQOD.");
+            MelonLogger.Msg("Hello from MoreQOD!");
             Instance = this;
             mqodUI = new MQOD_UI();
             mqodUI.init();
