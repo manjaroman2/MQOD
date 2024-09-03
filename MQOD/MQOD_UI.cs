@@ -166,10 +166,10 @@ namespace MQOD
                 GameObject row1 = UIFactory.CreateHorizontalGroup(ContentRoot, $"Row{i}", false, false, true, true, 20,
                     bgColor: new Color(1f, 1f, 1f, 0.0f));
 
-                Text HotkeyLabel = UIFactory.CreateLabel(row1, switchLabel, switchLabel);
-                HotkeyLabel.fontSize = fontSize;
-                HotkeyLabel.color = colorState1;
-                UIFactory.SetLayoutElement(HotkeyLabel.gameObject, minWidth: 25, minHeight: 25, flexibleWidth: 1);
+                Text SwitchLabel = UIFactory.CreateLabel(row1, switchLabel, switchLabel);
+                SwitchLabel.fontSize = fontSize;
+                SwitchLabel.color = stateGetter() ? colorState1 : colorState2;
+                UIFactory.SetLayoutElement(SwitchLabel.gameObject, minWidth: 25, minHeight: 25, flexibleWidth: 1);
                 ButtonRef Switch = UIFactory.CreateButton(row1, $"{switchLabel}Switch", stateString());
                 UIFactory.SetLayoutElement(Switch.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 0);
                 Switch.Component.GetComponentInChildren<Text>().fontSize = fontSize;
@@ -181,6 +181,7 @@ namespace MQOD
                 {
                     stateToggle();
                     Switch.ButtonText.text = stateString();
+                    SwitchLabel.color = stateGetter() ? colorState1 : colorState2;
                 };
             }
 
@@ -243,7 +244,8 @@ namespace MQOD
             {
                 base.ConstructPanelContent();
                 UIFactory.SetLayoutGroup<VerticalLayoutGroup>(ContentRoot, childControlWidth: true,
-                    childControlHeight: true, forceHeight: false, forceWidth: false);
+                    childControlHeight: true, forceHeight: false, forceWidth: false, padBottom: 20, padLeft: 20,
+                    padRight: 20, spacing: 5);
                 createHotkey(0, "UIToggle", () => MQOD.Instance.mqodUI.toggleUIKey,
                     code => MQOD.Instance.mqodUI.toggleUIKey = code,
                     toggleUITimer);
@@ -252,7 +254,7 @@ namespace MQOD
                 toggleAutoSortingLabel = createHotkey(2, "toggleAutoSorting [enabled]",
                     () => MQOD.Instance.mqodUI.toggleAutoSortingKey,
                     code => MQOD.Instance.mqodUI.toggleAutoSortingKey = code);
-                createSwitch(3, "Custom Sort Settings", Color.gray, Color.yellow,
+                createSwitch(3, "Custom Sort Settings", Color.yellow, Color.gray,
                     () => MQOD.Instance.mqodUI.customSortSettingsExpanded,
                     () =>
                     {
@@ -268,10 +270,10 @@ namespace MQOD
                 createHotkey(6, "minimapZoomIn", () => MQOD.Instance.mqodUI.minimapZoomInKey,
                     code => MQOD.Instance.mqodUI.minimapZoomInKey = code);
 
-                createSwitch(7, "Minimap Hold/Toggle", Color.gray, Color.gray,
+                createSwitch(7, "Minimap Function", Color.gray, Color.gray,
                     () => MQOD.Instance.mqodUI.MinimapZoomFunction,
                     () => MQOD.Instance.mqodUI.MinimapZoomFunction = !MQOD.Instance.mqodUI.MinimapZoomFunction,
-                    () => MQOD.Instance.mqodUI.MinimapZoomFunction ? "Hold" : "Toggle");
+                    () => MQOD.Instance.mqodUI.MinimapZoomFunction ? "Toggle" : "Hold");
 
                 createSlider(8, "Minimap opacity", 0.01f, 1.00f, f =>
                 {
@@ -300,7 +302,7 @@ namespace MQOD
 
             public override string Name => "MQOD - Custom Sort Settings";
             public override int MinWidth => 300;
-            public override int MinHeight => 500;
+            public override int MinHeight => 300;
             public override Vector2 DefaultAnchorMin => new(0.10f, 0.90f);
             public override Vector2 DefaultAnchorMax => new(0.10f, 0.90f);
             public override bool CanDragAndResize => true;
