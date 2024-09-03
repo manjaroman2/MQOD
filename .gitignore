@@ -1,6 +1,4 @@
 .idea/
-**/bin/Debug/*
-**/bin/Release/*
-**/obj/Debug/*
-**/obj/Release/*
+MQOD/bin/
+MQOD/obj/
 packages/
