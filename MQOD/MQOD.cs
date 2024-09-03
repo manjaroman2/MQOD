@@ -42,8 +42,7 @@ namespace MQOD
                     typeof(MQOD_UI.CustomSortPanel), (pBase =>
                     {
                         MQOD_UI.CustomSortPanel customSortPanel = (MQOD_UI.CustomSortPanel)pBase;
-                        customSortPanel.loadVariables(new List<string>
-                            { "Uniqueness", "Rarity", "Tier", "Type", "Subtype" });
+                        customSortPanel.loadVariables(Instance.preferencesManager.customSortOrderingEntry.Value);
                     })
                 }
             });

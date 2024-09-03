@@ -26,7 +26,7 @@ namespace MQOD
                 return;
             }
 
-            MelonLogger.Msg(Sort.sortItemGrid(MQOD.Instance.ShopSortInst.ShopItemController.GetSelectedPageGrid())
+            MelonLogger.Msg(MQOD.Instance.mqodUI.SortPanel.SortOrdering.sortItemGrid(MQOD.Instance.ShopSortInst.ShopItemController.GetSelectedPageGrid())
                 ? $"Sorted Shop {MQOD.Instance.ShopSortInst.ShopItemController.SelectedPage}"
                 : "There was nothing to sort :)");
         }

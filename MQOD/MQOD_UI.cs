@@ -288,7 +288,11 @@ namespace MQOD
 
         public class CustomSortPanel : MQOD_PanelBase
         {
-            public List<string> SortPanelEntries;
+            public Sort.Ordering SortOrdering
+            {
+                get => MQOD.Instance.preferencesManager.customSortOrderingEntry.Value;
+                set => MQOD.Instance.preferencesManager.customSortOrderingEntry.Value = value;
+            }
 
             public CustomSortPanel(UIBase owner) : base(owner)
             {
@@ -309,32 +313,42 @@ namespace MQOD
                     childAlignment: TextAnchor.UpperCenter,
                     spacing: 5, padLeft: 20, padRight: 20, padTop: 0, padBottom: 20);
 
-                List<List<object>> dragControllers = new ();
-                foreach (Text text in SortPanelEntries.Select(entry =>
-                             UIFactory.CreateLabel(ContentRoot, entry, entry, fontSize: fontSize)))
+                List<Text> texts = new();
+                Dictionary<Text, Sort.Category> CategoryIndex = new();
+
+                foreach (Sort.Category category in SortOrdering)
                 {
+                    Text text = UIFactory.CreateLabel(ContentRoot, category.GetString(), category.GetString(),
+                        fontSize: fontSize);
                     DragController daDragController = text.gameObject.AddComponent<DragController>();
                     daDragController.currentTransform = text.rectTransform;
-                    dragControllers.Add(new List<object>{daDragController, text});
-                    
                     UIFactory.SetLayoutElement(text.gameObject, minWidth: 25, minHeight: 25, flexibleWidth: 1);
-                }
-                foreach (List<object> list in dragControllers)
-                {
-                    DragController dragController = (DragController)list[0];
-                    Text text = (Text)list[1];
-                    
-                    dragController.callback = () =>
+
+                    CategoryIndex[text] = category;
+                    texts.Add(text);
+
+                    daDragController.callback = () =>
                     {
-                        MelonLogger.Msg("Hello from callback: " + text.text + " index: " + text.transform.GetSiblingIndex());
-                        
+                        Sort.Ordering oldOrdering = SortOrdering;
+                        Sort.Ordering newOrdering = new(oldOrdering.Count);
+                        foreach (Text textIter in texts)
+                        {
+                            int oldIdx = oldOrdering.IndexOf(CategoryIndex[textIter]);
+                            int newIdx = textIter.transform.GetSiblingIndex() - 1;
+                            // MelonLogger.Msg($"{oldIdx} {newIdx}");
+                            newOrdering[newIdx] = oldOrdering[oldIdx];
+                        }
+
+                        // MelonLogger.Msg("C");
+                        SortOrdering = newOrdering;
+                        // MelonLogger.Msg("D");
                     };
                 }
             }
 
-            public void loadVariables(List<string> entries)
+            public void loadVariables(Sort.Ordering entries)
             {
-                SortPanelEntries = entries;
+                SortOrdering = entries;
             }
         }
 
