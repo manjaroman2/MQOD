@@ -54,6 +54,18 @@ namespace MQOD
             set => minimapZoomInEntry.Value = value;
         }
 
+        public MQOD_UI.Minimap_ZoomFunction MinimapZoomFunction
+        {
+            get => minimapZoomFunctionEntry.Value;
+            set => minimapZoomFunctionEntry.Value = value;
+        }
+
+        public float minimapTransparency
+        {
+            get => minimapTransparencyEntry.Value;
+            set => minimapTransparencyEntry.Value = value;
+        }
+
         private MelonPreferences_Category Hotkeys;
         private MelonPreferences_Entry<KeyCode?> sortingKeyEntry;
         private MelonPreferences_Entry<KeyCode?> toggleAutoSortingKeyEntry;
@@ -61,6 +73,9 @@ namespace MQOD
         private MelonPreferences_Entry<KeyCode?> minimapFullscreenEntry;
         private MelonPreferences_Entry<KeyCode?> minimapZoomOutEntry;
         private MelonPreferences_Entry<KeyCode?> minimapZoomInEntry;
+        private MelonPreferences_Category Settings;
+        private MelonPreferences_Entry<MQOD_UI.Minimap_ZoomFunction> minimapZoomFunctionEntry;
+        private MelonPreferences_Entry<float> minimapTransparencyEntry;
 
         private readonly FeatureManager featureManager = new();
         private MQOD_UI mqodUI;
@@ -79,6 +94,12 @@ namespace MQOD
             minimapFullscreenEntry = Hotkeys.CreateEntry<KeyCode?>("minimapFullscreenEntry", KeyCode.Tab);
             minimapZoomOutEntry = Hotkeys.CreateEntry<KeyCode?>("minimapZoomOutEntry", KeyCode.Minus);
             minimapZoomInEntry = Hotkeys.CreateEntry<KeyCode?>("minimapZoomInEntry", KeyCode.Equals);
+            Settings = MelonPreferences.CreateCategory("Settings");
+            minimapZoomFunctionEntry =
+                Settings.CreateEntry("minimapZoomFunctionEntry",
+                    MQOD_UI.Minimap_ZoomFunction.HOLD);
+            minimapTransparencyEntry = Settings.CreateEntry("minimapTransparencyEntry", 0.3f); 
+            
 
 
             SortedItemGridInst = featureManager.addFeature<SortedItemGrid>();
@@ -123,8 +144,21 @@ namespace MQOD
 
             if (minimapFullscreen != null)
             {
-                if (Input.GetKeyDown((KeyCode)minimapFullscreen)) BetterMinimapInst.fullscreenMinimap();
-                else if (Input.GetKeyUp((KeyCode)minimapFullscreen)) BetterMinimapInst.resetFullscreen();
+                switch (MinimapZoomFunction)
+                {
+                    case MQOD_UI.Minimap_ZoomFunction.HOLD:
+                        if (Input.GetKeyDown((KeyCode)minimapFullscreen)) BetterMinimapInst.fullscreenMinimap();
+                        else if (Input.GetKeyUp((KeyCode)minimapFullscreen)) BetterMinimapInst.resetFullscreen();
+                        break;
+                    case MQOD_UI.Minimap_ZoomFunction.TOGGLE:
+                        if (Input.GetKeyDown((KeyCode)minimapFullscreen))
+                        {
+                            if (!BetterMinimapInst.zoomedIn) BetterMinimapInst.fullscreenMinimap();
+                            else BetterMinimapInst.resetFullscreen();
+                        }
+
+                        break;
+                }
             }
 
             if (minimapZoomOut != null && Input.GetKeyDown((KeyCode)minimapZoomOut)) BetterMinimapInst.zoomOut();

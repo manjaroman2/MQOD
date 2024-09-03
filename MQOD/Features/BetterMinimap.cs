@@ -13,9 +13,9 @@ namespace MQOD
     public class BetterMinimap : Feature, Hookable
     {
         private GameObject Img_Frame;
-        private bool initialized;
+        public bool initialized;
         private GUI_Minimap guiMinimap;
-        private Image boundsImage;
+        public Image boundsImage;
         private FieldInfo boundsWidthAccessor;
 
         private Vector2 rectTransform_anchorMin; 
@@ -25,12 +25,12 @@ namespace MQOD
         private Vector2 boundsImageRectTransform_pivot;
         private float boundsWidthAccessor_GetValue;
         private float config_MapDimensionUnits;
-        private Color boundsImage_color;
+        public Color boundsImage_color;
         private Outline outline;
         private RectTransform boundsImageRectTransform;
         private RectTransform rectTransform;
         private GUI_Minimap.Config config;
-        private bool zoomedIn;
+        public bool zoomedIn;
         public void init()
         {
             guiMinimap = Minimap.Get() as GUI_Minimap;
@@ -123,7 +123,7 @@ namespace MQOD
             config_MapDimensionUnits = config.MapDimensionUnits;
             config.MapDimensionUnits *= scalar;
             boundsImage_color = boundsImage.color;
-            boundsImage.color = new Color(boundsImage_color.r, boundsImage_color.g, boundsImage_color.b, 0.9f);
+            boundsImage.color = new Color(((Color) boundsImage_color).r, ((Color) boundsImage_color).g, ((Color) boundsImage_color).b, MQOD.Instance.minimapTransparency);
             // if (outline == null)
             // {
             //     outline = boundsImage.gameObject.AddComponent<Outline>();
@@ -158,7 +158,7 @@ namespace MQOD
             boundsImageRectTransform.sizeDelta = boundsImageRectTransform_sizeDelta;
             boundsWidthAccessor.SetValue(guiMinimap, boundsWidthAccessor_GetValue);
             config.MapDimensionUnits = config_MapDimensionUnits;
-            boundsImage.color = boundsImage_color;
+            if (boundsImage_color != null) boundsImage.color = (Color)boundsImage_color;
             // outline.enabled = false;
             
             zoomedIn = false;
