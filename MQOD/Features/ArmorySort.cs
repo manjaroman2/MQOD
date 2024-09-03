@@ -1,13 +1,10 @@
-using System.Collections.Generic;
 using Death.App;
-using Death.Items;
 using Death.Run.UserInterface.Items;
-using HarmonyLib;
 using MelonLoader;
 
 namespace MQOD
 {
-    public class ArmorySort : Feature, Hookable
+    public class ArmorySort : _Feature, _Hookable
     {
         public ItemController_Armory ItemControllerArmory;
 

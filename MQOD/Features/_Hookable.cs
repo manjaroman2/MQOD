@@ -1,6 +1,6 @@
 namespace MQOD
 {
-    public interface Hookable
+    public interface _Hookable
     {
         public void addHarmonyHooks();
     }

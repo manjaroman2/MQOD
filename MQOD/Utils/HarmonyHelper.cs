@@ -13,36 +13,30 @@ namespace MQOD
             HarmonyMethod prefix = null;
             HarmonyMethod postfix = null;
             if (prefixClazz != null && prefixMethod != null)
-            {
                 prefix = new HarmonyMethod(prefixClazz.GetMethod(prefixMethod, AccessTools.all));
-            }
 
             if (postfixClazz != null && postfixMethod != null)
-            {
                 postfix = new HarmonyMethod(postfixClazz.GetMethod(postfixMethod, AccessTools.all));
-            }
 
             if (prefix != null)
             {
                 if (postfix != null)
-                {
-                    MQOD.Instance.HarmonyInstance.Patch(typeof(PanelBase).GetConstructor(AccessTools.all, null, types, null),
+                    MQOD.Instance.HarmonyInstance.Patch(
+                        typeof(PanelBase).GetConstructor(AccessTools.all, null, types, null),
                         postfix: postfix, prefix: prefix);
-                }
                 else
-                {
-                    MQOD.Instance.HarmonyInstance.Patch(typeof(PanelBase).GetConstructor(AccessTools.all, null, types, null),
-                        prefix: prefix);
-                }
+                    MQOD.Instance.HarmonyInstance.Patch(
+                        typeof(PanelBase).GetConstructor(AccessTools.all, null, types, null),
+                        prefix);
             }
             else if (postfix != null)
             {
-                MQOD.Instance.HarmonyInstance.Patch(typeof(PanelBase).GetConstructor(AccessTools.all, null, types, null),
+                MQOD.Instance.HarmonyInstance.Patch(
+                    typeof(PanelBase).GetConstructor(AccessTools.all, null, types, null),
                     postfix: postfix);
             }
-            
         }
-        
+
         public static void Patch(Type clazz, string method, Type[] types = null, Type prefixClazz = null,
             string prefixMethod = null, Type postfixClazz = null, string postfixMethod = null)
         {
@@ -50,27 +44,19 @@ namespace MQOD
             HarmonyMethod prefix = null;
             HarmonyMethod postfix = null;
             if (prefixClazz != null && prefixMethod != null)
-            {
                 prefix = new HarmonyMethod(prefixClazz.GetMethod(prefixMethod, AccessTools.all));
-            }
 
             if (postfixClazz != null && postfixMethod != null)
-            {
                 postfix = new HarmonyMethod(postfixClazz.GetMethod(postfixMethod, AccessTools.all));
-            }
 
             if (prefix != null)
             {
                 if (postfix != null)
-                {
                     MQOD.Instance.HarmonyInstance.Patch(clazz.GetMethod(method, AccessTools.all, null, types, null),
                         postfix: postfix, prefix: prefix);
-                }
                 else
-                {
                     MQOD.Instance.HarmonyInstance.Patch(clazz.GetMethod(method, AccessTools.all, null, types, null),
-                        prefix: prefix);
-                }
+                        prefix);
             }
             else if (postfix != null)
             {

@@ -2,7 +2,6 @@ using System.Reflection;
 using Death.ResourceManagement;
 using Death.Run.UserInterface.HUD.Minimap;
 using Death.UserInterface;
-using Death.WorldGen;
 using HarmonyLib;
 using MelonLoader;
 using UnityEngine;
@@ -10,27 +9,33 @@ using UnityEngine.UI;
 
 namespace MQOD
 {
-    public class BetterMinimap : Feature, Hookable
+    public class BetterMinimap : _Feature, _Hookable
     {
-        private GameObject Img_Frame;
-        public bool initialized;
-        private GUI_Minimap guiMinimap;
         public Image boundsImage;
+        public Color boundsImage_color;
+        private RectTransform boundsImageRectTransform;
+        private Vector2 boundsImageRectTransform_pivot;
+        private Vector2 boundsImageRectTransform_sizeDelta;
         private FieldInfo boundsWidthAccessor;
+        private float boundsWidthAccessor_GetValue;
+        private GUI_Minimap.Config config;
+        private float config_MapDimensionUnits;
+        private GUI_Minimap guiMinimap;
+        private GameObject Img_Frame;
+        private Outline outline;
+        private RectTransform rectTransform;
+        private Vector2 rectTransform_anchorMax;
 
         private Vector2 rectTransform_anchorMin;
-        private Vector2 rectTransform_anchorMax;
         private Vector2 rectTransform_pivot;
-        private Vector2 boundsImageRectTransform_sizeDelta;
-        private Vector2 boundsImageRectTransform_pivot;
-        private float boundsWidthAccessor_GetValue;
-        private float config_MapDimensionUnits;
-        public Color boundsImage_color;
-        private Outline outline;
-        private RectTransform boundsImageRectTransform;
-        private RectTransform rectTransform;
-        private GUI_Minimap.Config config;
         public bool zoomedIn;
+
+        public void addHarmonyHooks()
+        {
+            // HarmonyHelper.Patch(typeof(MapObject_Doodad), nameof(MapObject_Doodad.Init),
+            //     new[] { typeof(MapObjectData), typeof(bool) }, postfixClazz: typeof(BetterMinimap),
+            //     postfixMethod: nameof(MapObject_Doodad__Init__Postfix));
+        }
 
         public void init()
         {
@@ -100,10 +105,8 @@ namespace MQOD
             }
 
             if (zoomedIn)
-            {
                 // MelonLogger.Error("BetterMinimap: already zoomed in");
                 return;
-            }
 
             Img_Frame.SetActive(false);
 
@@ -149,10 +152,8 @@ namespace MQOD
             }
 
             if (!zoomedIn)
-            {
                 // MelonLogger.Error("BetterMinimap: not zoomed in");
                 return;
-            }
 
             Img_Frame.SetActive(true);
             rectTransform.anchorMin = rectTransform_anchorMin;
@@ -166,13 +167,6 @@ namespace MQOD
             // outline.enabled = false;
 
             zoomedIn = false;
-        }
-
-        public void addHarmonyHooks()
-        {
-            // HarmonyHelper.Patch(typeof(MapObject_Doodad), nameof(MapObject_Doodad.Init),
-            //     new[] { typeof(MapObjectData), typeof(bool) }, postfixClazz: typeof(BetterMinimap),
-            //     postfixMethod: nameof(MapObject_Doodad__Init__Postfix));
         }
 
         // private static void MapObject_Doodad__Init__Postfix(MapObjectData data, bool isExhausted,

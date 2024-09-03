@@ -5,18 +5,18 @@ namespace MQOD
 {
     public class PreferencesManager
     {
+        public MelonPreferences_Entry<Sort.Ordering> customSortOrderingEntry;
+        public MelonPreferences_Entry<bool> customSortSettingsExpandedEntry;
         public MelonPreferences_Category Hotkeys;
+        public MelonPreferences_Entry<KeyCode?> minimapFullscreenKeyEntry;
+        public MelonPreferences_Entry<float> minimapTransparencyEntry;
+        public MelonPreferences_Entry<bool> minimapZoomFunctionEntry;
+        public MelonPreferences_Entry<KeyCode?> minimapZoomInKeyEntry;
+        public MelonPreferences_Entry<KeyCode?> minimapZoomOutKeyEntry;
+        public MelonPreferences_Category Settings;
         public MelonPreferences_Entry<KeyCode?> sortingKeyEntry;
         public MelonPreferences_Entry<KeyCode?> toggleAutoSortingKeyEntry;
         public MelonPreferences_Entry<KeyCode?> toggleUIKeyEntry;
-        public MelonPreferences_Entry<KeyCode?> minimapFullscreenKeyEntry;
-        public MelonPreferences_Entry<KeyCode?> minimapZoomOutKeyEntry;
-        public MelonPreferences_Entry<KeyCode?> minimapZoomInKeyEntry;
-        public MelonPreferences_Category Settings;
-        public MelonPreferences_Entry<bool> minimapZoomFunctionEntry;
-        public MelonPreferences_Entry<float> minimapTransparencyEntry;
-        public MelonPreferences_Entry<bool> customSortSettingsExpandedEntry;
-        public MelonPreferences_Entry<Sort.Ordering> customSortOrderingEntry;
 
         public void init()
         {

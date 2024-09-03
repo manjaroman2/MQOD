@@ -6,8 +6,6 @@ using Death.TimesRealm.UserInterface;
 using Death.UserInterface;
 using MelonLoader;
 using UnityEngine;
-using UnityEngine.UI;
-using UniverseLib.UI;
 using UniverseLib.UI.Panels;
 
 namespace MQOD
@@ -15,19 +13,19 @@ namespace MQOD
     public class MQOD : MelonMod
     {
         public static MQOD Instance;
-        public StashSort StashSortInst;
-        public ShopSort ShopSortInst;
-        public ArmorySort ArmorySortInst;
-        public SortedItemGrid SortedItemGridInst;
-        public BetterMinimap BetterMinimapInst;
-        public UniverseLibHooks UniverseLibHooksInst;
-        public bool IsRun;
-        public ScreenManager ScreenManager;
 
 
         private readonly FeatureManager featureManager = new();
         public readonly PreferencesManager preferencesManager = new();
+        public ArmorySort ArmorySortInst;
+        public BetterMinimap BetterMinimapInst;
+        public bool IsRun;
         public MQOD_UI mqodUI;
+        public ScreenManager ScreenManager;
+        public ShopSort ShopSortInst;
+        public SortedItemGrid SortedItemGridInst;
+        public StashSort StashSortInst;
+        public UniverseLibHooks UniverseLibHooksInst;
 
         public override void OnInitializeMelon()
         {
@@ -36,14 +34,14 @@ namespace MQOD
 
             preferencesManager.init();
 
-            UniverseLibHooksInst = new UniverseLibHooks(new Dictionary<Type, Action<PanelBase>>()
+            UniverseLibHooksInst = new UniverseLibHooks(new Dictionary<Type, Action<PanelBase>>
             {
                 {
-                    typeof(MQOD_UI.CustomSortPanel), (pBase =>
+                    typeof(MQOD_UI.CustomSortPanel), pBase =>
                     {
                         MQOD_UI.CustomSortPanel customSortPanel = (MQOD_UI.CustomSortPanel)pBase;
                         customSortPanel.loadVariables(Instance.preferencesManager.customSortOrderingEntry.Value);
-                    })
+                    }
                 }
             });
             UniverseLibHooksInst.addHarmonyHooks();
@@ -143,7 +141,6 @@ namespace MQOD
             }
 
             if (mqodUI.sortingKey != null && Input.GetKeyDown((KeyCode)mqodUI.sortingKey) && ScreenManager != null)
-            {
                 switch (ScreenManager.CurrentScreen)
                 {
                     case Screen_Stash:
@@ -156,7 +153,6 @@ namespace MQOD
                         ArmorySortInst.sort();
                         break;
                 }
-            }
 
 
             if (mqodUI.toggleUIKey != null && mqodUI.initialized && !mqodUI.HotkeyPanel.toggleUITimer.Enabled &&
@@ -171,10 +167,7 @@ namespace MQOD
         {
             GUIManager guiManager = GameObject.FindWithTag("RunGUI").GetComponent<GUIManager>();
             Instance.ScreenManager = guiManager.GetComponent<ScreenManager>();
-            if (!Instance.ScreenManager)
-            {
-                MelonLogger.Error("ScreenManager is null, something went terribly wrong!");
-            }
+            if (!Instance.ScreenManager) MelonLogger.Error("ScreenManager is null, something went terribly wrong!");
         }
     }
 }

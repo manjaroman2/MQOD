@@ -1,12 +1,10 @@
-using System;
 using Death.App;
 using Death.Run.UserInterface.Items;
-using HarmonyLib;
 using MelonLoader;
 
 namespace MQOD
 {
-    public class ShopSort : Feature, Hookable
+    public class ShopSort : _Feature, _Hookable
     {
         public ItemController_Shop ShopItemController;
 
@@ -26,9 +24,11 @@ namespace MQOD
                 return;
             }
 
-            MelonLogger.Msg(MQOD.Instance.mqodUI.SortPanel.SortOrdering.sortItemGrid(MQOD.Instance.ShopSortInst.ShopItemController.GetSelectedPageGrid())
-                ? $"Sorted Shop {MQOD.Instance.ShopSortInst.ShopItemController.SelectedPage}"
-                : "There was nothing to sort :)");
+            MelonLogger.Msg(
+                MQOD.Instance.mqodUI.SortPanel.SortOrdering.sortItemGrid(MQOD.Instance.ShopSortInst.ShopItemController
+                    .GetSelectedPageGrid())
+                    ? $"Sorted Shop {MQOD.Instance.ShopSortInst.ShopItemController.SelectedPage}"
+                    : "There was nothing to sort :)");
         }
 
 

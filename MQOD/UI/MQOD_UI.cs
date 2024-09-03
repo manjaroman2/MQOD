@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,11 +16,12 @@ namespace MQOD
 {
     public class MQOD_UI
     {
-        public UIBase UIBase;
+        private const float startupDelay = 1f;
         public CustomHotkeyPanel HotkeyPanel;
-        public CustomSortPanel SortPanel;
-        public int fontSize { get; set; }
         public bool initialized;
+        public CustomSortPanel SortPanel;
+        public UIBase UIBase;
+        public int fontSize { get; set; }
 
         public KeyCode? sortingKey
         {
@@ -77,8 +77,6 @@ namespace MQOD
             set => MQOD.Instance.preferencesManager.customSortSettingsExpandedEntry.Value = value;
         }
 
-        private const float startupDelay = 1f;
-
         public void init()
         {
             UniverseLibConfig config = new()
@@ -90,6 +88,30 @@ namespace MQOD
             };
 
             Universe.Init(startupDelay, OnInitialized, LogHandler, config);
+        }
+
+        private void UiUpdate()
+        {
+        }
+
+        private void OnInitialized()
+        {
+            UIBase = UniversalUI.RegisterUI("mj.MQOD", UiUpdate);
+            HotkeyPanel = new CustomHotkeyPanel(UIBase);
+            SortPanel = new CustomSortPanel(UIBase)
+            {
+                Enabled = MQOD.Instance.mqodUI.customSortSettingsExpanded
+            };
+
+            CanvasScaler canvasScaler = UIBase.Canvas.gameObject.AddComponent<CanvasScaler>();
+            if (canvasScaler != null) canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            UIBase.Enabled = true;
+            initialized = true;
+        }
+
+        private static void LogHandler(string message, LogType type)
+        {
+            MelonLogger.Msg(message);
         }
 
         public abstract class MQOD_PanelBase : PanelBase
@@ -122,14 +144,14 @@ namespace MQOD
                 Text HotkeyLabel = UIFactory.CreateLabel(row1, hotkeyLabel, hotkeyLabel);
                 HotkeyLabel.fontSize = fontSize;
                 HotkeyLabel.color = Color.green;
-                UIFactory.SetLayoutElement(HotkeyLabel.gameObject, minWidth: 25, minHeight: 25, flexibleWidth: 1);
+                UIFactory.SetLayoutElement(HotkeyLabel.gameObject, 25, 25, 1);
                 ButtonRef Hotkey = UIFactory.CreateButton(row1, $"{hotkeyLabel}Hotkey", keyCodeGetter().ToString());
                 Hotkey.Component.GetComponentInChildren<Text>().fontSize = fontSize;
                 Hotkey.Component.navigation = new Navigation
                 {
                     mode = Navigation.Mode.None
                 };
-                UIFactory.SetLayoutElement(Hotkey.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 0);
+                UIFactory.SetLayoutElement(Hotkey.GameObject, 100, 25, 0);
                 Hotkey.OnClick += () =>
                 {
                     MelonLogger.Msg("Clicked!");
@@ -169,9 +191,9 @@ namespace MQOD
                 Text SwitchLabel = UIFactory.CreateLabel(row1, switchLabel, switchLabel);
                 SwitchLabel.fontSize = fontSize;
                 SwitchLabel.color = stateGetter() ? colorState1 : colorState2;
-                UIFactory.SetLayoutElement(SwitchLabel.gameObject, minWidth: 25, minHeight: 25, flexibleWidth: 1);
+                UIFactory.SetLayoutElement(SwitchLabel.gameObject, 25, 25, 1);
                 ButtonRef Switch = UIFactory.CreateButton(row1, $"{switchLabel}Switch", stateString());
-                UIFactory.SetLayoutElement(Switch.GameObject, minWidth: 100, minHeight: 25, flexibleWidth: 0);
+                UIFactory.SetLayoutElement(Switch.GameObject, 100, 25, 0);
                 Switch.Component.GetComponentInChildren<Text>().fontSize = fontSize;
                 Switch.Component.navigation = new Navigation
                 {
@@ -195,9 +217,9 @@ namespace MQOD
                 Text Label = UIFactory.CreateLabel(row, label, $"{label}: {valueGetter():0.00}");
                 Label.fontSize = fontSize;
                 // Label.color = colorState1;
-                UIFactory.SetLayoutElement(Label.gameObject, minWidth: 25, minHeight: 25, flexibleWidth: 1);
+                UIFactory.SetLayoutElement(Label.gameObject, 25, 25, 1);
                 GameObject GObj_Slider = UIFactory.CreateSlider(row, $"{label}Slider", out Slider slider);
-                UIFactory.SetLayoutElement(GObj_Slider, minWidth: 100, minHeight: 25, flexibleWidth: 0);
+                UIFactory.SetLayoutElement(GObj_Slider, 100, 25, 0);
                 slider.minValue = minValue;
                 slider.maxValue = maxValue;
                 slider.value = valueGetter();
@@ -220,12 +242,15 @@ namespace MQOD
                 Text Label = UIFactory.CreateLabel(row, label, label);
                 Label.fontSize = fontSize;
                 // Label.color = colorState1;
-                UIFactory.SetLayoutElement(Label.gameObject, minWidth: 25, minHeight: 25, flexibleWidth: 1);
+                UIFactory.SetLayoutElement(Label.gameObject, 25, 25, 1);
             }
         }
 
         public class CustomHotkeyPanel : MQOD_PanelBase
         {
+            public readonly Timer toggleUITimer = new(1000);
+            public Text toggleAutoSortingLabel;
+
             public CustomHotkeyPanel(UIBase owner) : base(owner)
             {
             }
@@ -236,9 +261,6 @@ namespace MQOD
             public override Vector2 DefaultAnchorMin => new(0.10f, 0.90f);
             public override Vector2 DefaultAnchorMax => new(0.10f, 0.90f);
             public override bool CanDragAndResize => true;
-
-            public readonly Timer toggleUITimer = new(1000);
-            public Text toggleAutoSortingLabel;
 
             protected override void ConstructPanelContent()
             {
@@ -290,14 +312,14 @@ namespace MQOD
 
         public class CustomSortPanel : MQOD_PanelBase
         {
+            public CustomSortPanel(UIBase owner) : base(owner)
+            {
+            }
+
             public Sort.Ordering SortOrdering
             {
                 get => MQOD.Instance.preferencesManager.customSortOrderingEntry.Value;
                 set => MQOD.Instance.preferencesManager.customSortOrderingEntry.Value = value;
-            }
-
-            public CustomSortPanel(UIBase owner) : base(owner)
-            {
             }
 
             public override string Name => "MQOD - Custom Sort Settings";
@@ -324,7 +346,7 @@ namespace MQOD
                         fontSize: fontSize);
                     DragController daDragController = text.gameObject.AddComponent<DragController>();
                     daDragController.currentTransform = text.rectTransform;
-                    UIFactory.SetLayoutElement(text.gameObject, minWidth: 25, minHeight: 25, flexibleWidth: 1);
+                    UIFactory.SetLayoutElement(text.gameObject, 25, 25, 1);
 
                     CategoryIndex[text] = category;
                     texts.Add(text);
@@ -352,30 +374,6 @@ namespace MQOD
             {
                 SortOrdering = entries;
             }
-        }
-
-        private void UiUpdate()
-        {
-        }
-
-        private void OnInitialized()
-        {
-            UIBase = UniversalUI.RegisterUI("mj.MQOD", UiUpdate);
-            HotkeyPanel = new CustomHotkeyPanel(UIBase);
-            SortPanel = new CustomSortPanel(UIBase)
-            {
-                Enabled = MQOD.Instance.mqodUI.customSortSettingsExpanded
-            };
-
-            CanvasScaler canvasScaler = UIBase.Canvas.gameObject.AddComponent<CanvasScaler>();
-            if (canvasScaler != null) canvasScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            UIBase.Enabled = true;
-            initialized = true;
-        }
-
-        private static void LogHandler(string message, LogType type)
-        {
-            MelonLogger.Msg(message);
         }
     }
 }

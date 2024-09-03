@@ -1,20 +1,19 @@
 using Death.App;
 using Death.Items;
 using Death.Run.UserInterface.Items;
-using HarmonyLib;
 using MelonLoader;
 
 namespace MQOD
 {
-    public class StashSort : Feature, Hookable
+    public class StashSort : _Feature, _Hookable
     {
         private ItemController_Stash StashItemController;
 
         public void addHarmonyHooks()
         {
-            HarmonyHelper.Patch(typeof(GUI_Items_Stash), nameof(GUI_Items_Stash.Init), types: new[] { typeof(Profile) },
+            HarmonyHelper.Patch(typeof(GUI_Items_Stash), nameof(GUI_Items_Stash.Init), new[] { typeof(Profile) },
                 postfixClazz: typeof(StashSort), postfixMethod: nameof(GUI_Items_Stash__Init__Postfix));
-            HarmonyHelper.Patch(typeof(ItemController_Stash), "Transfer", types: new[] { typeof(ItemSlot) },
+            HarmonyHelper.Patch(typeof(ItemController_Stash), "Transfer", new[] { typeof(ItemSlot) },
                 postfixClazz: typeof(StashSort), postfixMethod: nameof(ItemController_Stash__Transfer__Postfix));
         }
 
@@ -28,13 +27,9 @@ namespace MQOD
             }
 
             if (MQOD.Instance.mqodUI.SortPanel.SortOrdering.sortItemGrid(StashItemController.SelectedPage))
-            {
                 MelonLogger.Msg("Sorting Page=" + StashItemController.SelectedPage);
-            }
             else
-            {
                 MelonLogger.Msg("Nothing to sort :)");
-            }
         }
         /*
         public static void addDropdown(GUI_StashTabManager stashTabManager, GameObject GObj_GUI_Panel_Stash)
@@ -75,13 +70,11 @@ namespace MQOD
             MQOD.Instance.StashSortInst.StashItemController = ____controller;
             // addDropdown(____stashTabManager, GameObject.Find("GUI_Panel_Stash"));
         }
+
         private static void ItemController_Stash__Transfer__Postfix(ItemSlot slot,
             ItemController_Stash __instance)
         {
-            if (MQOD.Instance.SortedItemGridInst.isEnabled())
-            {
-                MQOD.Instance.StashSortInst.sortSelectedPage();
-            }
+            if (MQOD.Instance.SortedItemGridInst.isEnabled()) MQOD.Instance.StashSortInst.sortSelectedPage();
         }
     }
 }
