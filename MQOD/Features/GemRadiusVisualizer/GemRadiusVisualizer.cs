@@ -22,19 +22,18 @@ namespace MQOD
         private static readonly FieldInfo _isPrimaryPlayerInstance_Accessor =
             AccessTools.Field(typeof(Behaviour_Player), "_isPrimaryPlayerInstance");
 
+        public readonly MelonPreferences_Entry<bool> Shown =
+            MQOD.Instance.preferencesManager.addSettingsEntry("GemRadiusVisualizerShown", true);
+
         private Behaviour_GemCollector behaviourGemCollector;
         public GemRadiusCreator GemRadiusCreator;
         public float PullArea;
         public RuntimeStats Stats;
-        public readonly MelonPreferences_Entry<bool> Shown = MQOD.Instance.preferencesManager.addSettingsEntry("GemRadiusVisualizerShown", true);
 
         public void toggle()
         {
             Shown.Value = !Shown.Value;
-            if (GemRadiusCreator != null)
-            {
-                GemRadiusCreator.quad.SetActive(Shown.Value);
-            }
+            if (GemRadiusCreator != null) GemRadiusCreator.quad.SetActive(Shown.Value);
         }
 
         public void updateScale()
@@ -48,6 +47,7 @@ namespace MQOD
             behaviourGemCollector = behaviourPlayer.GetComponent<Behaviour_GemCollector>();
             if (behaviourGemCollector == null) MelonLogger.Error("GemRadiusVisualizer: behaviourGemCollector is null!");
         }
+
         private static void GUI_CharacterStats__FormatPullArea__Postfix(GUI_CharacterStats __instance)
         {
             if (MQOD.Instance.GemRadiusVisualizerInst != null)
@@ -110,7 +110,7 @@ namespace MQOD
                 }
             }
         }
-        
+
         protected override void addHarmonyHooks()
         {
             HarmonyHelper.Patch(typeof(Behaviour_Player), nameof(Behaviour_Player.Init),

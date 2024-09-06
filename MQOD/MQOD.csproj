@@ -134,7 +134,7 @@
             <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.dll</HintPath>
         </Reference>
         <Reference Include="Tomlet">
-          <HintPath>..\..\Death Must Die\MelonLoader\Tomlet.dll</HintPath>
+            <HintPath>..\..\Death Must Die\MelonLoader\Tomlet.dll</HintPath>
         </Reference>
         <Reference Include="Tomlyn">
             <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\Tomlyn.dll</HintPath>

@@ -1,6 +1,5 @@
 using System.Timers;
 using UnityEngine;
-using UnityEngine.UI;
 using UniverseLib.UI;
 
 namespace MQOD
@@ -32,7 +31,6 @@ namespace MQOD
 
             createPanelSwitch("Gem Visualizer", MQOD.Instance.UI.FeatureGemVisualizer);
             createPanelSwitch("Camera Zoom", MQOD.Instance.UI.FeatureCamera);
-
         }
     }
 }

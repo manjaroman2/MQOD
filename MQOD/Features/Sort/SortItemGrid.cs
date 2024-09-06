@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Death.Items;
 using HarmonyLib;
-using MelonLoader;
 
 namespace MQOD
 {

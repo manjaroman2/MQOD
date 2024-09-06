@@ -7,6 +7,8 @@ namespace MQOD
 {
     public class PanelFeatureSort : PanelBaseMQOD
     {
+        public Text toggleAutoSortingLabel;
+
         public PanelFeatureSort(UIBase owner) : base(owner)
         {
         }
@@ -28,8 +30,6 @@ namespace MQOD
             get => MQOD.Instance.preferencesManager.toggleAutoSortingKeyEntry.Value;
             set => MQOD.Instance.preferencesManager.toggleAutoSortingKeyEntry.Value = value;
         }
-
-        public Text toggleAutoSortingLabel;
 
         public override string Name => "MQOD - Custom Sort Settings";
         public override int MinWidth => 300;

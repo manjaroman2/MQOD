@@ -11,16 +11,7 @@ namespace MQOD
 {
     public class MQOD : MelonMod
     {
-        private static MQOD _Instance; 
-        public static MQOD Instance
-        {
-            get
-            {
-                if (_Instance != null) return _Instance;
-                MelonLogger.Error("MQOD _Instance is null!");
-                throw new NullReferenceException("MQOD _Instance is null!");
-            }
-        }
+        private static MQOD _Instance;
 
 
         public readonly AssetManager assetManager = new();
@@ -38,6 +29,16 @@ namespace MQOD
         public SortStash SortStashInst;
         public UIMQOD UI;
         public UniverseLibHooks UniverseLibHooksInst;
+
+        public static MQOD Instance
+        {
+            get
+            {
+                if (_Instance != null) return _Instance;
+                MelonLogger.Error("MQOD _Instance is null!");
+                throw new NullReferenceException("MQOD _Instance is null!");
+            }
+        }
 
         public override void OnInitializeMelon()
         {
@@ -148,7 +149,8 @@ namespace MQOD
                 MelonLogger.Msg($"Item grid sorting: {text}");
             }
 
-            if (UI.FeatureSort.sortingKey != null && Input.GetKeyDown((KeyCode)UI.FeatureSort.sortingKey) && ScreenManager != null)
+            if (UI.FeatureSort.sortingKey != null && Input.GetKeyDown((KeyCode)UI.FeatureSort.sortingKey) &&
+                ScreenManager != null)
                 switch (ScreenManager.CurrentScreen)
                 {
                     case Screen_Stash:
@@ -163,22 +165,16 @@ namespace MQOD
                 }
 
             if (UI.FeatureCamera.cameraZoomKey != null && Input.GetKeyDown((KeyCode)UI.FeatureCamera.cameraZoomKey))
-            {
                 CameraZoomInst.zoomOut();
-            }
 
             if (preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value != null &&
                 Input.GetKeyDown((KeyCode)preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value))
-            {
-                GemRadiusVisualizerInst.toggle(); 
-            }
+                GemRadiusVisualizerInst.toggle();
 
             if (UI.toggleUIKey != null && UI.initialized && !UI.Main.toggleUITimer.Enabled &&
                 Input.GetKeyDown((KeyCode)UI.toggleUIKey))
-            {
                 // MelonLogger.Msg("Toggle UI");
                 UI.UIBase.Enabled = !UI.UIBase.Enabled;
-            }
         }
 
         public override void OnApplicationQuit()

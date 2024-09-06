@@ -4,12 +4,14 @@ namespace MQOD
 {
     public class CameraZoom : _Feature
     {
-        private int zoomState = 0;
         private const int maxZoomState = 5;
-        private float defaultZoom; 
+        private float defaultZoom;
+        private int zoomState;
+
         protected override void addHarmonyHooks()
         {
-            HarmonyHelper.Patch(typeof(RunCamera), "Start", postfixClazz:typeof(CameraZoom), postfixMethod:nameof(RunCamera__Start__Postfix));
+            HarmonyHelper.Patch(typeof(RunCamera), "Start", postfixClazz: typeof(CameraZoom),
+                postfixMethod: nameof(RunCamera__Start__Postfix));
         }
 
         protected void init()
@@ -23,14 +25,14 @@ namespace MQOD
             if (!initialized) return;
             if (zoomState <= maxZoomState)
             {
-                RunCamera.Instance.OrthographicSize = defaultZoom + (zoomState * 1.1f);
+                RunCamera.Instance.OrthographicSize = defaultZoom + zoomState * 1.1f;
                 zoomState++;
             }
             else
             {
                 RunCamera.Instance.OrthographicSize = defaultZoom;
                 zoomState = 0;
-            } 
+            }
         }
 
         private static void RunCamera__Start__Postfix()

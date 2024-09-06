@@ -3,7 +3,6 @@ using System.Timers;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
-using UniverseLib;
 using UniverseLib.Input;
 using UniverseLib.UI;
 using UniverseLib.UI.Models;
@@ -273,7 +272,7 @@ namespace MQOD
             slider = uiObject1.AddComponent<Slider>();
             slider.fillRect = uiObject4.GetComponent<RectTransform>();
             slider.handleRect = uiObject6.GetComponent<RectTransform>();
-            slider.targetGraphic = (Graphic)image3;
+            slider.targetGraphic = image3;
             slider.direction = Slider.Direction.LeftToRight;
             // RuntimeHelper.Instance.Internal_SetColorBlock((Selectable) slider, new Color?(new Color(0.4f, 0.4f, 0.4f)), new Color?(new Color(0.55f, 0.55f, 0.55f)), new Color?(new Color(0.3f, 0.3f, 0.3f)));
             return uiObject1;

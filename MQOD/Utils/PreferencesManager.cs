@@ -11,24 +11,22 @@ namespace MQOD
 {
     public class PreferencesManager
     {
+        private readonly List<MelonPreferences_Entry> entries = new();
+        public MelonPreferences_Entry<KeyCode?> cameraZoomKeyEntry;
         public MelonPreferences_Entry<Sort.Ordering> customSortOrderingEntry;
-        public MelonPreferences_Entry<float> widthModifier;
         public MelonPreferences_Entry<float> gemRadiusColorFloat;
+        public MelonPreferences_Entry<KeyCode?> gemRadiusVisualizerToggleKeyEntry;
         public MelonPreferences_Category Hotkeys;
+        public MelonPreferences_Entry<KeyCode?> minimapFullscreenKeyEntry;
         public MelonPreferences_Entry<float> minimapTransparencyEntry;
         public MelonPreferences_Entry<bool> minimapZoomFunctionEntry;
-        public MelonPreferences_Category Settings;
-        public MelonPreferences_Entry<KeyCode?> minimapFullscreenKeyEntry;
         public MelonPreferences_Entry<KeyCode?> minimapZoomInKeyEntry;
         public MelonPreferences_Entry<KeyCode?> minimapZoomOutKeyEntry;
+        public MelonPreferences_Category Settings;
         public MelonPreferences_Entry<KeyCode?> sortingKeyEntry;
         public MelonPreferences_Entry<KeyCode?> toggleAutoSortingKeyEntry;
         public MelonPreferences_Entry<KeyCode?> toggleUIKeyEntry;
-        public MelonPreferences_Entry<KeyCode?> cameraZoomKeyEntry;
-        public MelonPreferences_Entry<KeyCode?> gemRadiusVisualizerToggleKeyEntry;
-         
-
-        private readonly List<MelonPreferences_Entry> entries = new();
+        public MelonPreferences_Entry<float> widthModifier;
 
         public void init()
         {
@@ -48,10 +46,7 @@ namespace MQOD
             TomletMain.RegisterMapper(ordering =>
             {
                 TomlArray tomlArray = new();
-                foreach (Sort.Category category in ordering)
-                {
-                    tomlArray.Add(category);
-                }
+                foreach (Sort.Category category in ordering) tomlArray.Add(category);
 
                 return tomlArray;
             }, value =>
@@ -73,7 +68,6 @@ namespace MQOD
             cameraZoomKeyEntry = Hotkeys.CreateEntry<KeyCode?>("cameraZoomKeyEntry", KeyCode.Semicolon);
             gemRadiusVisualizerToggleKeyEntry =
                 Hotkeys.CreateEntry<KeyCode?>("gemRadiusVisualizerToggleKeyEntry", KeyCode.Quote);
-
         }
 
         public MelonPreferences_Entry<T> addSettingsEntry<T>(string identifier, T default_value)
@@ -82,7 +76,5 @@ namespace MQOD
             entries.Add(entry);
             return entry;
         }
-        
-        
     }
 }
