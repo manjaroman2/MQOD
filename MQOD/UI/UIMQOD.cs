@@ -12,7 +12,7 @@ namespace MQOD
     {
         private const float startupDelay = 0f;
         public PanelFeatureCamera FeatureCamera;
-        public PanelFeatureGemVisualizer FeatureGemVisualizerSettings;
+        public PanelFeatureGemVisualizer FeatureGemVisualizer;
         public PanelFeatureMinimap FeatureMinimap;
         public PanelFeatureSort FeatureSort;
         public bool initialized;
@@ -51,7 +51,7 @@ namespace MQOD
             MelonLogger.Msg("UIMQOD OnInitialized");
             UIBase = UniversalUI.RegisterUI("mj.MQOD", UiUpdate);
             FeatureSort = new PanelFeatureSort(UIBase) { Enabled = false };
-            FeatureGemVisualizerSettings = new PanelFeatureGemVisualizer(UIBase) { Enabled = false };
+            FeatureGemVisualizer = new PanelFeatureGemVisualizer(UIBase) { Enabled = false };
             FeatureMinimap = new PanelFeatureMinimap(UIBase) { Enabled = false };
             FeatureCamera = new PanelFeatureCamera(UIBase) { Enabled = false };
             Main = new PanelMain(UIBase);

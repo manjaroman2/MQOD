@@ -138,16 +138,7 @@ namespace MQOD
 
         public void resetFullscreen()
         {
-            if (!initialized)
-            {
-                MelonLogger.Warning("BetterMinimap: not initialized");
-                return;
-            }
-
-            if (!zoomedIn)
-                // MelonLogger.Error("BetterMinimap: not zoomed in");
-                return;
-
+            if (!initialized || !zoomedIn) return;
             Img_Frame.SetActive(true);
             rectTransform.anchorMin = rectTransform_anchorMin;
             rectTransform.anchorMax = rectTransform_anchorMax;

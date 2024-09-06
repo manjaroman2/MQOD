@@ -1,5 +1,10 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using MelonLoader;
+using Tomlet;
+using Tomlet.Exceptions;
+using Tomlet.Models;
 using UnityEngine;
 
 namespace MQOD
@@ -7,17 +12,18 @@ namespace MQOD
     public class PreferencesManager
     {
         public MelonPreferences_Entry<Sort.Ordering> customSortOrderingEntry;
-        public MelonPreferences_Entry<float> gemVisualizerWidthEntry;
+        public MelonPreferences_Entry<float> widthModifier;
         public MelonPreferences_Category Hotkeys;
-        public MelonPreferences_Entry<KeyCode?> minimapFullscreenKeyEntry;
         public MelonPreferences_Entry<float> minimapTransparencyEntry;
         public MelonPreferences_Entry<bool> minimapZoomFunctionEntry;
+        public MelonPreferences_Category Settings;
+        public MelonPreferences_Entry<KeyCode?> minimapFullscreenKeyEntry;
         public MelonPreferences_Entry<KeyCode?> minimapZoomInKeyEntry;
         public MelonPreferences_Entry<KeyCode?> minimapZoomOutKeyEntry;
-        public MelonPreferences_Category Settings;
         public MelonPreferences_Entry<KeyCode?> sortingKeyEntry;
         public MelonPreferences_Entry<KeyCode?> toggleAutoSortingKeyEntry;
         public MelonPreferences_Entry<KeyCode?> toggleUIKeyEntry;
+        public MelonPreferences_Entry<KeyCode?> cameraZoomKeyEntry;
 
         private readonly List<MelonPreferences_Entry> entries = new();
 
@@ -35,11 +41,32 @@ namespace MQOD
             minimapZoomFunctionEntry =
                 Settings.CreateEntry("minimapZoomFunctionEntry", false);
             minimapTransparencyEntry = Settings.CreateEntry("minimapTransparencyEntry", 0.3f);
-            gemVisualizerWidthEntry = Settings.CreateEntry("gemVisualizerWidthEntry", 1.0f);
+            widthModifier = Settings.CreateEntry("gemVisualizerWidthModifierEntry", 0.5f);
+            TomletMain.RegisterMapper(ordering =>
+            {
+                TomlArray tomlArray = new();
+                foreach (Sort.Category category in ordering)
+                {
+                    tomlArray.Add(category);
+                }
+
+                return tomlArray;
+            }, value =>
+            {
+                if (value is not TomlArray tomlArray)
+                    throw new TomlTypeMismatchException(typeof(TomlArray), value.GetType(), typeof(Sort.Ordering));
+
+                Sort.Ordering ordering = new(tomlArray.Count);
+                ordering.AddRange(tomlArray.Select(tomlValue =>
+                    (Sort.Category)Enum.Parse(typeof(Sort.Category), tomlValue.StringValue)));
+
+                return ordering;
+            });
             customSortOrderingEntry = Settings.CreateEntry("customSortOrderingEntry", new Sort.Ordering
             {
                 Sort.Category.UNIQUENESS, Sort.Category.RARITY, Sort.Category.TIER, Sort.Category.TYPE
             });
+            cameraZoomKeyEntry = Hotkeys.CreateEntry<KeyCode?>("cameraZoomKeyEntry", KeyCode.Semicolon);
         }
 
         public MelonPreferences_Entry<T> addSettingsEntry<T>(string identifier, T default_value)

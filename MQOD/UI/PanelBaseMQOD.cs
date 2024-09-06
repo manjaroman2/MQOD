@@ -161,6 +161,55 @@ namespace MQOD
             };
         }
 
+        protected void createColorSlider(string label,
+            Action<float> onValueChanged,
+            Func<float> valueGetter)
+        {
+            
+            Vector4 FlatToColor(float f)
+            {
+                int flat = Mathf.RoundToInt(f);
+
+                int[] c = new int[6];
+                int remainder = flat % 256;
+                int n = flat / 256;
+                int i = 0;
+                while (i < n)
+                {
+                    c[i] = 255;
+                    i++; 
+                }
+                c[i] = remainder;
+
+                int r = 255 + c[4] - c[1];
+                int g = 0 + c[0] - c[3];
+                int b = 0 + c[2] - c[5];
+                return new Color(r, g, b, 1);
+            } 
+            GameObject row = CreateRow();
+
+            Text Label = UIFactory.CreateLabel(row, label, $"{label}: {valueGetter():0.00}");
+            Label.fontSize = fontSize;
+            UIFactory.SetLayoutElement(Label.gameObject, 25, 25, 1);
+            GameObject GObj_Slider = UIFactory.CreateSlider(row, $"{label}Slider", out Slider slider);
+            UIFactory.SetLayoutElement(GObj_Slider, 100, 25, 1);
+            slider.minValue = 0.0f;
+            slider.maxValue = 256f * 6f; 
+            slider.value = valueGetter();
+            slider.onValueChanged.AddListener(f =>
+            {
+                Label.text = $"{label}: {f:0.00}";
+                Vector4 color = FlatToColor(f);
+                Label.color = color;
+                onValueChanged(f);
+            });
+            // slider.colors = new ColorBlock();
+            slider.navigation = new Navigation
+            {
+                mode = Navigation.Mode.None
+            };
+        }
+
         protected void createTextEntry(string label)
         {
             GameObject row = CreateRow();

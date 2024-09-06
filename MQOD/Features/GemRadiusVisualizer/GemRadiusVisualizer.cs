@@ -22,35 +22,23 @@ namespace MQOD
         private static readonly FieldInfo _isPrimaryPlayerInstance_Accessor =
             AccessTools.Field(typeof(Behaviour_Player), "_isPrimaryPlayerInstance");
 
-
-        // public void updateShaderWidth()
-        // {
-        //     if (GemRadiusCreator != null) GemRadiusCreator.setShaderWidth(gemVisualizerWidth);
-        // }
-
         private Behaviour_GemCollector behaviourGemCollector;
-
-        // public float Radius;
         public GemRadiusCreator GemRadiusCreator;
         public float PullArea;
         public RuntimeStats Stats;
 
 
-        public float gemVisualizerWidth
-        {
-            get => MQOD.Instance.preferencesManager.gemVisualizerWidthEntry.Value;
-            set => MQOD.Instance.preferencesManager.gemVisualizerWidthEntry.Value = value;
-            // updateShaderWidth();
-        }
-
         private void getBehaviourGemCollector(Behaviour_Player behaviourPlayer)
         {
             if (behaviourGemCollector != null) return; // load only if stale
             behaviourGemCollector = behaviourPlayer.GetComponent<Behaviour_GemCollector>();
-
             if (behaviourGemCollector == null) MelonLogger.Error("GemRadiusVisualizer: behaviourGemCollector is null!");
         }
 
+        public void updateScale()
+        {
+            GemRadiusCreator.Scale = Mathf.Max(Stats.GetAsRadius(StatId.PullArea), 0.15f) * 4.0f;
+        }
 
         private static void GUI_CharacterStats__FormatPullArea__Postfix(GUI_CharacterStats __instance)
         {
@@ -88,11 +76,6 @@ namespace MQOD
             }
         }
 
-        public void updateScale()
-        {
-            GemRadiusCreator.Scale = Mathf.Max(Stats.GetAsRadius(StatId.PullArea), 0.15f) * 4.0f;
-        }
-
         private static void Behaviour_Player__Init__Postfix(TalentLoadout talents, Action onEquipmentChangeCallback,
             Behaviour_Player __instance)
         {
@@ -120,8 +103,7 @@ namespace MQOD
                 }
             }
         }
-
-
+        
         protected override void addHarmonyHooks()
         {
             HarmonyHelper.Patch(typeof(Behaviour_Player), nameof(Behaviour_Player.Init),

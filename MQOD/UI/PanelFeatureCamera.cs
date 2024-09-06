@@ -16,9 +16,16 @@ namespace MQOD
         public override Vector2 DefaultAnchorMax => new(0.10f, 0.90f);
         public override bool CanDragAndResize => true;
 
+        public KeyCode? cameraZoomKey
+        {
+            get => MQOD.Instance.preferencesManager.cameraZoomKeyEntry.Value;
+            set => MQOD.Instance.preferencesManager.cameraZoomKeyEntry.Value = value;
+        }
+
         protected override void ConstructPanelContent()
         {
             base.ConstructPanelContent();
+            createHotkey("Camera Zoom", () => cameraZoomKey, code => cameraZoomKey = code);
         }
     }
 }

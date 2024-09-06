@@ -27,10 +27,11 @@ namespace MQOD
             createHotkey("UIToggle", () => MQOD.Instance.UI.toggleUIKey,
                 code => MQOD.Instance.UI.toggleUIKey = code,
                 toggleUITimer);
-            createPanelSwitch("Custom Sort Settings", MQOD.Instance.UI.FeatureSort);
-            createPanelSwitch("Minimap Settings", MQOD.Instance.UI.FeatureMinimap);
+            createPanelSwitch("Custom Sort", MQOD.Instance.UI.FeatureSort);
+            createPanelSwitch("Minimap", MQOD.Instance.UI.FeatureMinimap);
 
-            createPanelSwitch("Gem Visualizer Settings", MQOD.Instance.UI.FeatureGemVisualizerSettings);
+            createPanelSwitch("Gem Visualizer", MQOD.Instance.UI.FeatureGemVisualizer);
+            createPanelSwitch("Camera Zoom", MQOD.Instance.UI.FeatureCamera);
 
         }
     }

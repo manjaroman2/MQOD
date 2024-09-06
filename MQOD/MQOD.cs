@@ -1,4 +1,5 @@
-﻿using Claw.UserInterface.Screens;
+﻿using System;
+using Claw.UserInterface.Screens;
 using Death.Run.Behaviours;
 using Death.TimesRealm;
 using Death.TimesRealm.UserInterface;
@@ -10,7 +11,16 @@ namespace MQOD
 {
     public class MQOD : MelonMod
     {
-        public static MQOD Instance;
+        private static MQOD _Instance; 
+        public static MQOD Instance
+        {
+            get
+            {
+                if (_Instance != null) return _Instance;
+                MelonLogger.Error("MQOD _Instance is null!");
+                throw new NullReferenceException("MQOD _Instance is null!");
+            }
+        }
 
 
         public readonly AssetManager assetManager = new();
@@ -32,7 +42,7 @@ namespace MQOD
         public override void OnInitializeMelon()
         {
             MelonLogger.Msg("Hello from MoreQOD.");
-            Instance = this;
+            _Instance = this;
 
             assetManager.init();
             preferencesManager.init();
@@ -82,9 +92,9 @@ namespace MQOD
         {
             if (!UI.initialized) return;
             if (Input.GetKeyDown(KeyCode.L)) Player.Instance.Entity.Invulnerable.AddStack();
-            if (Input.GetKeyDown(KeyCode.K))
-                MelonLogger.Msg("Width: " + Instance.GemRadiusVisualizerInst.GemRadiusCreator.quad
-                    .GetComponent<Renderer>().material.GetFloat(GemRadiusCreator.__Width));
+            // if (Input.GetKeyDown(KeyCode.K))
+            //     MelonLogger.Msg("Width: " + Instance.GemRadiusVisualizerInst.GemRadiusCreator.quad
+            //         .GetComponent<Renderer>().material.GetFloat(GemRadiusCreator.__Width));
 
             if (UI.FeatureMinimap.minimapFullscreenKey != null)
             {
@@ -152,6 +162,10 @@ namespace MQOD
                         break;
                 }
 
+            if (UI.FeatureCamera.cameraZoomKey != null && Input.GetKeyDown((KeyCode)UI.FeatureCamera.cameraZoomKey))
+            {
+                CameraZoomInst.zoomOut();
+            }
 
             if (UI.toggleUIKey != null && UI.initialized && !UI.Main.toggleUITimer.Enabled &&
                 Input.GetKeyDown((KeyCode)UI.toggleUIKey))
@@ -159,6 +173,13 @@ namespace MQOD
                 MelonLogger.Msg("Toggle UI");
                 UI.UIBase.Enabled = !UI.UIBase.Enabled;
             }
+        }
+
+        public override void OnApplicationQuit()
+        {
+            MelonLogger.Msg("Quitting!");
+            MelonPreferences.Save();
+            base.OnApplicationQuit();
         }
 
         private static void Facade_Lobby__Init__Postfix(ILobbyGameState state, Facade_Lobby __instance)
