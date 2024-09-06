@@ -1,6 +1,4 @@
-using MelonLoader;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UniverseLib.UI;
 
 namespace MQOD
@@ -9,18 +7,24 @@ namespace MQOD
     {
         public PanelFeatureGemVisualizer(UIBase owner) : base(owner)
         {
-            
         }
 
 
-        public float widthModifier
+        public static float widthModifier
         {
             get => MQOD.Instance.preferencesManager.widthModifier.Value;
             set
             {
                 MQOD.Instance.preferencesManager.widthModifier.Value = value;
-                if (MQOD.Instance.GemRadiusVisualizerInst.GemRadiusCreator != null) MQOD.Instance.GemRadiusVisualizerInst.GemRadiusCreator.updateWidth();
+                if (MQOD.Instance.GemRadiusVisualizerInst.GemRadiusCreator != null)
+                    MQOD.Instance.GemRadiusVisualizerInst.GemRadiusCreator.updateWidth();
             }
+        }
+
+        public static float colorFloat
+        {
+            get => MQOD.Instance.preferencesManager.gemRadiusColorFloat.Value;
+            set => MQOD.Instance.preferencesManager.gemRadiusColorFloat.Value = value;
         }
 
         public override string Name => "MQOD - Gem Visualizer";
@@ -33,10 +37,12 @@ namespace MQOD
         protected override void ConstructPanelContent()
         {
             base.ConstructPanelContent();
+            createHotkey("Toggle", () => MQOD.Instance.preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value,
+                code => MQOD.Instance.preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value = code);
             createSlider("Width Modifier", 0.01f, 1.00f,
                 f => { widthModifier = f; },
                 () => widthModifier);
-            createColorSlider("Color", f => {}, () => 0.0f);
+            createColorSlider("Color", f => { colorFloat = f; }, () => colorFloat);
         }
     }
 }

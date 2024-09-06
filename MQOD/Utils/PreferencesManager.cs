@@ -13,6 +13,7 @@ namespace MQOD
     {
         public MelonPreferences_Entry<Sort.Ordering> customSortOrderingEntry;
         public MelonPreferences_Entry<float> widthModifier;
+        public MelonPreferences_Entry<float> gemRadiusColorFloat;
         public MelonPreferences_Category Hotkeys;
         public MelonPreferences_Entry<float> minimapTransparencyEntry;
         public MelonPreferences_Entry<bool> minimapZoomFunctionEntry;
@@ -24,6 +25,8 @@ namespace MQOD
         public MelonPreferences_Entry<KeyCode?> toggleAutoSortingKeyEntry;
         public MelonPreferences_Entry<KeyCode?> toggleUIKeyEntry;
         public MelonPreferences_Entry<KeyCode?> cameraZoomKeyEntry;
+        public MelonPreferences_Entry<KeyCode?> gemRadiusVisualizerToggleKeyEntry;
+         
 
         private readonly List<MelonPreferences_Entry> entries = new();
 
@@ -66,7 +69,11 @@ namespace MQOD
             {
                 Sort.Category.UNIQUENESS, Sort.Category.RARITY, Sort.Category.TIER, Sort.Category.TYPE
             });
+            gemRadiusColorFloat = Settings.CreateEntry("gemRadiusColorFloat", 0.0f);
             cameraZoomKeyEntry = Hotkeys.CreateEntry<KeyCode?>("cameraZoomKeyEntry", KeyCode.Semicolon);
+            gemRadiusVisualizerToggleKeyEntry =
+                Hotkeys.CreateEntry<KeyCode?>("gemRadiusVisualizerToggleKeyEntry", KeyCode.Quote);
+
         }
 
         public MelonPreferences_Entry<T> addSettingsEntry<T>(string identifier, T default_value)
@@ -75,5 +82,7 @@ namespace MQOD
             entries.Add(entry);
             return entry;
         }
+        
+        
     }
 }

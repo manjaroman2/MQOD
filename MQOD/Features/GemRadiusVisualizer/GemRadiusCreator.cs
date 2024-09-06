@@ -24,7 +24,7 @@ namespace MQOD
         private float _Scale;
         private Shader GemRadiusShader;
         private GameObject parentObject;
-        private GameObject quad;
+        public GameObject quad;
         private Material material;
 
         public void updateWidth()
@@ -32,7 +32,7 @@ namespace MQOD
             _Width = 1 / _Scale;
             if (MQOD.Instance.UI.FeatureGemVisualizer != null)
             {
-                _Width *= 2 * MQOD.Instance.UI.FeatureGemVisualizer.widthModifier;
+                _Width *= 2 * PanelFeatureGemVisualizer.widthModifier;
             }
 
             setWidth();
@@ -51,31 +51,37 @@ namespace MQOD
 
         private void Start()
         {
-            MelonLogger.Msg("GemRadiusCreator: Init");
+            // MelonLogger.Msg("GemRadiusCreator: Init");
 
             if (GemRadiusShader == null)
             {
                 GemRadiusShader = MQOD.Instance.assetManager.bundle.LoadAsset<Shader>("SimpleCircleShader");
-                MelonLogger.Msg($"GemRadiusCreator: Init {GemRadiusShader.name}");
+                // MelonLogger.Msg($"GemRadiusCreator: Init {GemRadiusShader.name}");
             }
 
 
             if (quad == null)
             {
-                MelonLogger.Msg("GemRadiusCreator: Init Quad");
+                // MelonLogger.Msg("GemRadiusCreator: Init Quad");
                 quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
                 material = new Material(GemRadiusShader);
                 updateWidth();
-                material.SetColor("_Color", (Vector4)new Color(20, 0, 0, 1));
+
+                MQOD.Instance.preferencesManager.gemRadiusColorFloat.OnEntryValueChanged.Subscribe((_, newVal) =>
+                {
+                    material.SetColor("_Color", PanelBaseMQOD.FlatToColor(newVal));
+                });
+                material.SetColor("_Color", PanelBaseMQOD.FlatToColor(MQOD.Instance.preferencesManager.gemRadiusColorFloat.Value));
                 quad.GetComponent<Renderer>().material = material;
                 quad.GetComponent<Renderer>().sortingLayerName = "Units";
                 quad.transform.SetParent(parentObject.transform);
                 quad.transform.localPosition = Vector3.zero;
                 quad.transform.rotation = Quaternion.identity;
+                quad.SetActive(MQOD.Instance.GemRadiusVisualizerInst.Shown.Value);
                 setQuadScale();
             }
 
-            MelonLogger.Msg("GemRadiusCreator: Initialized!");
+            // MelonLogger.Msg("GemRadiusCreator: Initialized!");
         }
     }
 }

@@ -26,13 +26,15 @@ namespace MQOD
         public GemRadiusCreator GemRadiusCreator;
         public float PullArea;
         public RuntimeStats Stats;
+        public readonly MelonPreferences_Entry<bool> Shown = MQOD.Instance.preferencesManager.addSettingsEntry("GemRadiusVisualizerShown", true);
 
-
-        private void getBehaviourGemCollector(Behaviour_Player behaviourPlayer)
+        public void toggle()
         {
-            if (behaviourGemCollector != null) return; // load only if stale
-            behaviourGemCollector = behaviourPlayer.GetComponent<Behaviour_GemCollector>();
-            if (behaviourGemCollector == null) MelonLogger.Error("GemRadiusVisualizer: behaviourGemCollector is null!");
+            Shown.Value = !Shown.Value;
+            if (GemRadiusCreator != null)
+            {
+                GemRadiusCreator.quad.SetActive(Shown.Value);
+            }
         }
 
         public void updateScale()
@@ -40,9 +42,14 @@ namespace MQOD
             GemRadiusCreator.Scale = Mathf.Max(Stats.GetAsRadius(StatId.PullArea), 0.15f) * 4.0f;
         }
 
+        private void getBehaviourGemCollector(Behaviour_Player behaviourPlayer)
+        {
+            if (behaviourGemCollector != null) return; // load only if stale
+            behaviourGemCollector = behaviourPlayer.GetComponent<Behaviour_GemCollector>();
+            if (behaviourGemCollector == null) MelonLogger.Error("GemRadiusVisualizer: behaviourGemCollector is null!");
+        }
         private static void GUI_CharacterStats__FormatPullArea__Postfix(GUI_CharacterStats __instance)
         {
-            MelonLogger.Msg("GUI_CharacterStats__FormatPullArea__Postfix");
             if (MQOD.Instance.GemRadiusVisualizerInst != null)
             {
                 GemRadiusVisualizer gemRadiusVisualizer = MQOD.Instance.GemRadiusVisualizerInst;

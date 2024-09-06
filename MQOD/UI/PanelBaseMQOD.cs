@@ -3,6 +3,7 @@ using System.Timers;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
+using UniverseLib;
 using UniverseLib.Input;
 using UniverseLib.UI;
 using UniverseLib.UI.Models;
@@ -161,49 +162,69 @@ namespace MQOD
             };
         }
 
+        public static ColorBlock generateColorBlock(Color color)
+        {
+            ColorBlock colorBlock = ColorBlock.defaultColorBlock;
+            colorBlock.normalColor = color;
+            colorBlock.highlightedColor = color;
+            colorBlock.pressedColor = color;
+            colorBlock.selectedColor = color;
+            return colorBlock;
+        }
+
+        public static Color FlatToColor(float f)
+        {
+            int flat = Mathf.RoundToInt(f);
+
+            int[] c = new int[6];
+            int remainder = flat % 256;
+            int n = flat / 256;
+            int i = 0;
+            while (i < n)
+            {
+                c[i] = 255;
+                i++;
+            }
+
+            c[i] = remainder;
+
+            byte r = (byte)(255 + c[4] - c[1]);
+            byte g = (byte)(0 + c[0] - c[3]);
+            byte b = (byte)(0 + c[2] - c[5]);
+            return new Color32(r, g, b, 255);
+        }
+
         protected void createColorSlider(string label,
             Action<float> onValueChanged,
             Func<float> valueGetter)
         {
-            
-            Vector4 FlatToColor(float f)
-            {
-                int flat = Mathf.RoundToInt(f);
-
-                int[] c = new int[6];
-                int remainder = flat % 256;
-                int n = flat / 256;
-                int i = 0;
-                while (i < n)
-                {
-                    c[i] = 255;
-                    i++; 
-                }
-                c[i] = remainder;
-
-                int r = 255 + c[4] - c[1];
-                int g = 0 + c[0] - c[3];
-                int b = 0 + c[2] - c[5];
-                return new Color(r, g, b, 1);
-            } 
             GameObject row = CreateRow();
 
-            Text Label = UIFactory.CreateLabel(row, label, $"{label}: {valueGetter():0.00}");
+            Text Label = UIFactory.CreateLabel(row, label, $"{label}");
             Label.fontSize = fontSize;
-            UIFactory.SetLayoutElement(Label.gameObject, 25, 25, 1);
-            GameObject GObj_Slider = UIFactory.CreateSlider(row, $"{label}Slider", out Slider slider);
-            UIFactory.SetLayoutElement(GObj_Slider, 100, 25, 1);
+            UIFactory.SetLayoutElement(Label.gameObject, 75, 25, 0);
+            GameObject GObj_Slider = CreateSlider(row, $"{label}Slider", out Slider slider, out Image image1,
+                out Image image2);
+
+            void applyColor(Color color)
+            {
+                Label.color = color;
+                slider.colors = generateColorBlock(color);
+                image1.color = color;
+                image2.color = color;
+            }
+
+            UIFactory.SetLayoutElement(GObj_Slider, 400, 25, 1);
             slider.minValue = 0.0f;
-            slider.maxValue = 256f * 6f; 
+            slider.maxValue = 256f * 6f;
             slider.value = valueGetter();
             slider.onValueChanged.AddListener(f =>
             {
-                Label.text = $"{label}: {f:0.00}";
-                Vector4 color = FlatToColor(f);
-                Label.color = color;
+                Label.text = $"{label}";
+                applyColor(FlatToColor(f));
                 onValueChanged(f);
             });
-            // slider.colors = new ColorBlock();
+            applyColor(FlatToColor(0.0f));
             slider.navigation = new Navigation
             {
                 mode = Navigation.Mode.None
@@ -216,6 +237,46 @@ namespace MQOD
             Text Label = UIFactory.CreateLabel(row, label, label);
             Label.fontSize = fontSize;
             UIFactory.SetLayoutElement(Label.gameObject, 25, 25, 1);
+        }
+
+
+        protected GameObject CreateSlider(GameObject parent, string name, out Slider slider, out Image image1,
+            out Image image2)
+        {
+            GameObject uiObject1 = UIFactory.CreateUIObject(name, parent, new Vector2(25f, 25f));
+            GameObject uiObject2 = UIFactory.CreateUIObject("Background", uiObject1);
+            GameObject uiObject3 = UIFactory.CreateUIObject("Fill Area", uiObject1);
+            GameObject uiObject4 = UIFactory.CreateUIObject("Fill", uiObject3);
+            GameObject uiObject5 = UIFactory.CreateUIObject("Handle Slide Area", uiObject1);
+            GameObject uiObject6 = UIFactory.CreateUIObject("Handle", uiObject5);
+            image1 = uiObject2.AddComponent<Image>();
+            image1.type = Image.Type.Sliced;
+            RectTransform component1 = uiObject2.GetComponent<RectTransform>();
+            component1.anchorMin = new Vector2(0.0f, 0.25f);
+            component1.anchorMax = new Vector2(1f, 0.75f);
+            component1.sizeDelta = new Vector2(0.0f, 0.0f);
+            RectTransform component2 = uiObject3.GetComponent<RectTransform>();
+            component2.anchorMin = new Vector2(0.0f, 0.25f);
+            component2.anchorMax = new Vector2(1f, 0.75f);
+            component2.anchoredPosition = new Vector2(-5f, 0.0f);
+            component2.sizeDelta = new Vector2(-20f, 0.0f);
+            image2 = uiObject4.AddComponent<Image>();
+            image2.type = Image.Type.Sliced;
+            uiObject4.GetComponent<RectTransform>().sizeDelta = new Vector2(10f, 0.0f);
+            RectTransform component3 = uiObject5.GetComponent<RectTransform>();
+            component3.sizeDelta = new Vector2(-20f, 0.0f);
+            component3.anchorMin = new Vector2(0.0f, 0.0f);
+            component3.anchorMax = new Vector2(1f, 1f);
+            Image image3 = uiObject6.AddComponent<Image>();
+            image3.color = new Color(0.5f, 0.5f, 1f, 1f);
+            uiObject6.GetComponent<RectTransform>().sizeDelta = new Vector2(20f, 0.0f);
+            slider = uiObject1.AddComponent<Slider>();
+            slider.fillRect = uiObject4.GetComponent<RectTransform>();
+            slider.handleRect = uiObject6.GetComponent<RectTransform>();
+            slider.targetGraphic = (Graphic)image3;
+            slider.direction = Slider.Direction.LeftToRight;
+            // RuntimeHelper.Instance.Internal_SetColorBlock((Selectable) slider, new Color?(new Color(0.4f, 0.4f, 0.4f)), new Color?(new Color(0.55f, 0.55f, 0.55f)), new Color?(new Color(0.3f, 0.3f, 0.3f)));
+            return uiObject1;
         }
     }
 }

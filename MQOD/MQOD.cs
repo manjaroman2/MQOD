@@ -167,10 +167,16 @@ namespace MQOD
                 CameraZoomInst.zoomOut();
             }
 
+            if (preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value != null &&
+                Input.GetKeyDown((KeyCode)preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value))
+            {
+                GemRadiusVisualizerInst.toggle(); 
+            }
+
             if (UI.toggleUIKey != null && UI.initialized && !UI.Main.toggleUITimer.Enabled &&
                 Input.GetKeyDown((KeyCode)UI.toggleUIKey))
             {
-                MelonLogger.Msg("Toggle UI");
+                // MelonLogger.Msg("Toggle UI");
                 UI.UIBase.Enabled = !UI.UIBase.Enabled;
             }
         }
