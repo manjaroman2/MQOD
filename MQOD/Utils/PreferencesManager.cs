@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using MelonLoader;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace MQOD
     public class PreferencesManager
     {
         public MelonPreferences_Entry<Sort.Ordering> customSortOrderingEntry;
-        public MelonPreferences_Entry<bool> customSortSettingsExpandedEntry;
+        public MelonPreferences_Entry<float> gemVisualizerWidthEntry;
         public MelonPreferences_Category Hotkeys;
         public MelonPreferences_Entry<KeyCode?> minimapFullscreenKeyEntry;
         public MelonPreferences_Entry<float> minimapTransparencyEntry;
@@ -18,8 +19,11 @@ namespace MQOD
         public MelonPreferences_Entry<KeyCode?> toggleAutoSortingKeyEntry;
         public MelonPreferences_Entry<KeyCode?> toggleUIKeyEntry;
 
+        private readonly List<MelonPreferences_Entry> entries = new();
+
         public void init()
         {
+            MelonLogger.Msg("PreferencesManager Init");
             Hotkeys = MelonPreferences.CreateCategory("Hotkeys");
             sortingKeyEntry = Hotkeys.CreateEntry<KeyCode?>("sortingKey", KeyCode.S);
             toggleAutoSortingKeyEntry = Hotkeys.CreateEntry<KeyCode?>("toggleAutoSortingKey", KeyCode.P);
@@ -31,11 +35,18 @@ namespace MQOD
             minimapZoomFunctionEntry =
                 Settings.CreateEntry("minimapZoomFunctionEntry", false);
             minimapTransparencyEntry = Settings.CreateEntry("minimapTransparencyEntry", 0.3f);
-            customSortSettingsExpandedEntry = Settings.CreateEntry("customSortSettingsExpandedEntry", false);
+            gemVisualizerWidthEntry = Settings.CreateEntry("gemVisualizerWidthEntry", 1.0f);
             customSortOrderingEntry = Settings.CreateEntry("customSortOrderingEntry", new Sort.Ordering
             {
                 Sort.Category.UNIQUENESS, Sort.Category.RARITY, Sort.Category.TIER, Sort.Category.TYPE
             });
+        }
+
+        public MelonPreferences_Entry<T> addSettingsEntry<T>(string identifier, T default_value)
+        {
+            MelonPreferences_Entry<T> entry = Settings.CreateEntry(identifier, default_value);
+            entries.Add(entry);
+            return entry;
         }
     }
 }

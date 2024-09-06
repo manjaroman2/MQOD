@@ -6,7 +6,7 @@ using UniverseLib.UI.Panels;
 
 namespace MQOD
 {
-    public class UniverseLibHooks : _Hookable
+    public class UniverseLibHooks : _Feature
     {
         private readonly Dictionary<Type, Action<PanelBase>> ConstructorPrefixAction;
 
@@ -15,16 +15,16 @@ namespace MQOD
             ConstructorPrefixAction = new Dictionary<Type, Action<PanelBase>>
             {
                 {
-                    typeof(PanelSort), pBase =>
+                    typeof(PanelFeatureSort), pBase =>
                     {
-                        PanelSort panelSort = (PanelSort)pBase;
-                        panelSort.loadVariables(MQOD.Instance.preferencesManager.customSortOrderingEntry.Value);
+                        PanelFeatureSort panelFeatureSort = (PanelFeatureSort)pBase;
+                        panelFeatureSort.loadVariables(MQOD.Instance.preferencesManager.customSortOrderingEntry.Value);
                     }
                 }
             };
         }
 
-        public void addHarmonyHooks()
+        protected override void addHarmonyHooks()
         {
             HarmonyHelper.PatchConstructor(typeof(PanelBase), new[] { typeof(UIBase) },
                 typeof(UniverseLibHooks), nameof(PanelBase_Constructor_Prefix));

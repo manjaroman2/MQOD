@@ -9,5 +9,12 @@ namespace MQOD
             get => _initialized;
             protected set => _initialized = value;
         }
+
+        protected abstract void addHarmonyHooks();
+
+        public void applyHarmonyHooks()
+        {
+            addHarmonyHooks();
+        }
     }
 }

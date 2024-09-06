@@ -46,6 +46,9 @@
         <PostBuildEvent>/home/marc/RiderProjects/MQOD/build-post.sh $(Configuration)</PostBuildEvent>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="Features\CameraZoom.cs"/>
+        <Compile Include="Features\GemRadiusVisualizer\GemRadiusCreator.cs"/>
+        <Compile Include="Features\GemRadiusVisualizer\GemRadiusVisualizer.cs"/>
         <Compile Include="Features\BetterMinimap.cs"/>
         <Compile Include="Features\Sort\Sort.cs"/>
         <Compile Include="Features\Sort\SortArmory.cs"/>
@@ -53,15 +56,17 @@
         <Compile Include="Features\Sort\SortShop.cs"/>
         <Compile Include="Features\Sort\SortStash.cs"/>
         <Compile Include="Features\_Feature.cs"/>
-        <Compile Include="Features\GemRadiusVisualizer.cs"/>
-        <Compile Include="Features\_Hookable.cs"/>
         <Compile Include="MQOD.cs"/>
         <Compile Include="Properties\AssemblyInfo.cs"/>
-        <Compile Include="UI\PanelHotkey.cs"/>
-        <Compile Include="UI\PanelSort.cs"/>
+        <Compile Include="UI\PanelFeatureCamera.cs"/>
+        <Compile Include="UI\PanelFeatureGemVisualizer.cs"/>
+        <Compile Include="UI\PanelFeatureMinimap.cs"/>
+        <Compile Include="UI\PanelMain.cs"/>
+        <Compile Include="UI\PanelFeatureSort.cs"/>
         <Compile Include="UI\ComponentDragController.cs"/>
         <Compile Include="UI\PanelBaseMQOD.cs"/>
         <Compile Include="UI\UIMQOD.cs"/>
+        <Compile Include="Utils\AssetManager.cs"/>
         <Compile Include="Utils\FeatureManager.cs"/>
         <Compile Include="Utils\HarmonyHelper.cs"/>
         <Compile Include="Utils\PreferencesManager.cs"/>

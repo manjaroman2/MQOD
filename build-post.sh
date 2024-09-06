@@ -1,7 +1,8 @@
 #!/usr/bin/bash
 
 projpath="/home/marc/RiderProjects/MQOD"
-projassetpath="/home/marc/dev/MoreQODAssets"
+projassetpath="/home/marc/dev/URPTest3D"
+#projassetpath="/home/marc/dev/MQODAssets"
 gamedir="/home/marc/RiderProjects/Death Must Die"
 
 # --- change this if you know what you're doing  

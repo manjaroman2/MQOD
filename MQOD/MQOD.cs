@@ -1,4 +1,5 @@
 ﻿using Claw.UserInterface.Screens;
+using Death.Run.Behaviours;
 using Death.TimesRealm;
 using Death.TimesRealm.UserInterface;
 using Death.UserInterface;
@@ -12,11 +13,15 @@ namespace MQOD
         public static MQOD Instance;
 
 
+        public readonly AssetManager assetManager = new();
         private readonly FeatureManager featureManager = new();
         public readonly PreferencesManager preferencesManager = new();
         public BetterMinimap BetterMinimapInst;
+        public CameraZoom CameraZoomInst;
+        public GemRadiusVisualizer GemRadiusVisualizerInst;
         public bool IsRun;
         public ScreenManager ScreenManager;
+
         public SortArmory SortArmoryInst;
         public SortItemGrid SortItemGridInst;
         public SortShop SortShopInst;
@@ -26,14 +31,13 @@ namespace MQOD
 
         public override void OnInitializeMelon()
         {
-            MelonLogger.Msg("Hello from MoreQOD!");
+            MelonLogger.Msg("Hello from MoreQOD.");
             Instance = this;
 
+            assetManager.init();
             preferencesManager.init();
-
             UniverseLibHooksInst = new UniverseLibHooks();
-            UniverseLibHooksInst.addHarmonyHooks();
-
+            UniverseLibHooksInst.applyHarmonyHooks();
             UI = new UIMQOD();
             UI.init();
 
@@ -42,6 +46,8 @@ namespace MQOD
             SortShopInst = featureManager.addFeature<SortShop>();
             SortArmoryInst = featureManager.addFeature<SortArmory>();
             BetterMinimapInst = featureManager.addFeature<BetterMinimap>();
+            GemRadiusVisualizerInst = featureManager.addFeature<GemRadiusVisualizer>();
+            CameraZoomInst = featureManager.addFeature<CameraZoom>();
             featureManager.addHarmonyHooks();
 
 
@@ -74,21 +80,24 @@ namespace MQOD
 
         public override void OnLateUpdate()
         {
-            // if (Input.GetKeyDown(KeyCode.L))
-            // {
-            //     if (IsRun) Player.Instance.Entity.Invulnerable.AddStack();
-            // }
+            if (!UI.initialized) return;
+            if (Input.GetKeyDown(KeyCode.L)) Player.Instance.Entity.Invulnerable.AddStack();
+            if (Input.GetKeyDown(KeyCode.K))
+                MelonLogger.Msg("Width: " + Instance.GemRadiusVisualizerInst.GemRadiusCreator.quad
+                    .GetComponent<Renderer>().material.GetFloat(GemRadiusCreator.__Width));
 
-            if (UI.minimapFullscreenKey != null)
+            if (UI.FeatureMinimap.minimapFullscreenKey != null)
             {
-                if (!UI.MinimapZoomFunction)
+                if (!UI.FeatureMinimap.MinimapZoomFunction)
                 {
-                    if (Input.GetKeyDown((KeyCode)UI.minimapFullscreenKey)) BetterMinimapInst.fullscreenMinimap();
-                    else if (Input.GetKeyUp((KeyCode)UI.minimapFullscreenKey)) BetterMinimapInst.resetFullscreen();
+                    if (Input.GetKeyDown((KeyCode)UI.FeatureMinimap.minimapFullscreenKey))
+                        BetterMinimapInst.fullscreenMinimap();
+                    else if (Input.GetKeyUp((KeyCode)UI.FeatureMinimap.minimapFullscreenKey))
+                        BetterMinimapInst.resetFullscreen();
                 }
                 else
                 {
-                    if (Input.GetKeyDown((KeyCode)UI.minimapFullscreenKey))
+                    if (Input.GetKeyDown((KeyCode)UI.FeatureMinimap.minimapFullscreenKey))
                     {
                         if (!BetterMinimapInst.zoomedIn) BetterMinimapInst.fullscreenMinimap();
                         else BetterMinimapInst.resetFullscreen();
@@ -96,13 +105,15 @@ namespace MQOD
                 }
             }
 
-            if (UI.minimapZoomOutKey != null && Input.GetKeyDown((KeyCode)UI.minimapZoomOutKey))
+            if (UI.FeatureMinimap.minimapZoomOutKey != null &&
+                Input.GetKeyDown((KeyCode)UI.FeatureMinimap.minimapZoomOutKey))
                 BetterMinimapInst.zoomOut();
-            if (UI.minimapZoomInKey != null && Input.GetKeyDown((KeyCode)UI.minimapZoomInKey))
+            if (UI.FeatureMinimap.minimapZoomInKey != null &&
+                Input.GetKeyDown((KeyCode)UI.FeatureMinimap.minimapZoomInKey))
                 BetterMinimapInst.zoomIn();
 
-            if (UI.toggleAutoSortingKey != null &&
-                Input.GetKeyDown((KeyCode)UI.toggleAutoSortingKey)) // middle click or S 
+            if (UI.FeatureSort.toggleAutoSortingKey != null &&
+                Input.GetKeyDown((KeyCode)UI.FeatureSort.toggleAutoSortingKey)) // middle click or S 
             {
                 SortItemGridInst.toggleSorting();
                 Color color;
@@ -118,16 +129,16 @@ namespace MQOD
                     text = "disabled";
                 }
 
-                if (UI.Hotkey.toggleAutoSortingLabel != null)
+                if (UI.FeatureSort.toggleAutoSortingLabel != null)
                 {
-                    UI.Hotkey.toggleAutoSortingLabel.color = color;
-                    UI.Hotkey.toggleAutoSortingLabel.text = $"toggleAutoSorting [{text}]";
+                    UI.FeatureSort.toggleAutoSortingLabel.color = color;
+                    UI.FeatureSort.toggleAutoSortingLabel.text = $"toggleAutoSorting [{text}]";
                 }
 
                 MelonLogger.Msg($"Item grid sorting: {text}");
             }
 
-            if (UI.sortingKey != null && Input.GetKeyDown((KeyCode)UI.sortingKey) && ScreenManager != null)
+            if (UI.FeatureSort.sortingKey != null && Input.GetKeyDown((KeyCode)UI.FeatureSort.sortingKey) && ScreenManager != null)
                 switch (ScreenManager.CurrentScreen)
                 {
                     case Screen_Stash:
@@ -142,7 +153,7 @@ namespace MQOD
                 }
 
 
-            if (UI.toggleUIKey != null && UI.initialized && !UI.Hotkey.toggleUITimer.Enabled &&
+            if (UI.toggleUIKey != null && UI.initialized && !UI.Main.toggleUITimer.Enabled &&
                 Input.GetKeyDown((KeyCode)UI.toggleUIKey))
             {
                 MelonLogger.Msg("Toggle UI");

@@ -5,9 +5,9 @@ using UniverseLib.UI;
 
 namespace MQOD
 {
-    public class PanelSort : PanelBaseMQOD
+    public class PanelFeatureSort : PanelBaseMQOD
     {
-        public PanelSort(UIBase owner) : base(owner)
+        public PanelFeatureSort(UIBase owner) : base(owner)
         {
         }
 
@@ -16,6 +16,20 @@ namespace MQOD
             get => MQOD.Instance.preferencesManager.customSortOrderingEntry.Value;
             set => MQOD.Instance.preferencesManager.customSortOrderingEntry.Value = value;
         }
+
+        public KeyCode? sortingKey
+        {
+            get => MQOD.Instance.preferencesManager.sortingKeyEntry.Value;
+            set => MQOD.Instance.preferencesManager.sortingKeyEntry.Value = value;
+        }
+
+        public KeyCode? toggleAutoSortingKey
+        {
+            get => MQOD.Instance.preferencesManager.toggleAutoSortingKeyEntry.Value;
+            set => MQOD.Instance.preferencesManager.toggleAutoSortingKeyEntry.Value = value;
+        }
+
+        public Text toggleAutoSortingLabel;
 
         public override string Name => "MQOD - Custom Sort Settings";
         public override int MinWidth => 300;
@@ -27,10 +41,9 @@ namespace MQOD
         protected override void ConstructPanelContent()
         {
             base.ConstructPanelContent();
-            UIFactory.SetLayoutGroup<VerticalLayoutGroup>(ContentRoot, childControlWidth: true,
-                childControlHeight: true, forceWidth: false, forceHeight: false,
-                childAlignment: TextAnchor.UpperCenter,
-                spacing: 5, padLeft: 20, padRight: 20, padTop: 0, padBottom: 20);
+            createHotkey("Sorting", () => sortingKey, code => sortingKey = code);
+            createHotkey("toggleAutoSorting [enabled]", () => toggleAutoSortingKey, code => toggleAutoSortingKey = code,
+                out toggleAutoSortingLabel);
 
             List<Text> texts = new();
             Dictionary<Text, Sort.Category> CategoryIndex = new();

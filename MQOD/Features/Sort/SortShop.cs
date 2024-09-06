@@ -4,11 +4,11 @@ using MelonLoader;
 
 namespace MQOD
 {
-    public class SortShop : _Feature, _Hookable
+    public class SortShop : _Feature
     {
         public ItemController_Shop ShopItemController;
 
-        public void addHarmonyHooks()
+        protected override void addHarmonyHooks()
         {
             HarmonyHelper.Patch(typeof(GUI_Items_Shop), nameof(GUI_Items_Shop.Init), new[] { typeof(Profile) },
                 postfixClazz: typeof(SortShop), postfixMethod: nameof(GUI_Items_Shop__Init__Postfix));
@@ -25,7 +25,7 @@ namespace MQOD
             }
 
             MelonLogger.Msg(
-                MQOD.Instance.UI.Sort.SortOrdering.sortItemGrid(MQOD.Instance.SortShopInst.ShopItemController
+                MQOD.Instance.UI.FeatureSort.SortOrdering.sortItemGrid(MQOD.Instance.SortShopInst.ShopItemController
                     .GetSelectedPageGrid())
                     ? $"Sorted Shop {MQOD.Instance.SortShopInst.ShopItemController.SelectedPage}"
                     : "There was nothing to sort :)");

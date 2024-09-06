@@ -5,11 +5,11 @@ using MelonLoader;
 
 namespace MQOD
 {
-    public class SortStash : _Feature, _Hookable
+    public class SortStash : _Feature
     {
         private ItemController_Stash StashItemController;
 
-        public void addHarmonyHooks()
+        protected override void addHarmonyHooks()
         {
             HarmonyHelper.Patch(typeof(GUI_Items_Stash), nameof(GUI_Items_Stash.Init), new[] { typeof(Profile) },
                 postfixClazz: typeof(SortStash), postfixMethod: nameof(GUI_Items_Stash__Init__Postfix));
@@ -26,7 +26,7 @@ namespace MQOD
                 return;
             }
 
-            if (MQOD.Instance.UI.Sort.SortOrdering.sortItemGrid(StashItemController.SelectedPage))
+            if (MQOD.Instance.UI.FeatureSort.SortOrdering.sortItemGrid(StashItemController.SelectedPage))
                 MelonLogger.Msg("Sorting Page=" + StashItemController.SelectedPage);
             else
                 MelonLogger.Msg("Nothing to sort :)");

@@ -17,11 +17,10 @@ namespace MQOD
         public void addHarmonyHooks()
         {
             foreach (_Feature feature in Features)
-                if (feature is _Hookable hookableFeature)
-                {
-                    MelonLogger.Msg($"Adding Harmony hooks for {feature}");
-                    hookableFeature.addHarmonyHooks();
-                }
+            {
+                MelonLogger.Msg($"Adding Harmony hooks for {feature}");
+                feature.applyHarmonyHooks();
+            }
         }
     }
 }

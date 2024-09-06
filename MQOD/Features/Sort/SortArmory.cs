@@ -4,11 +4,11 @@ using MelonLoader;
 
 namespace MQOD
 {
-    public class SortArmory : _Feature, _Hookable
+    public class SortArmory : _Feature
     {
         public ItemController_Armory ItemControllerArmory;
 
-        public void addHarmonyHooks()
+        protected override void addHarmonyHooks()
         {
             HarmonyHelper.Patch(typeof(GUI_Items_Armory), nameof(GUI_Items_Armory.Init), new[] { typeof(Profile) },
                 postfixClazz: typeof(SortArmory), postfixMethod: nameof(GUI_Items_Armory__Init__Postfix));
@@ -16,7 +16,7 @@ namespace MQOD
 
         public void sort()
         {
-            MelonLogger.Msg(MQOD.Instance.UI.Sort.SortOrdering.sortItemGrid(ItemControllerArmory.ArmoryGrid)
+            MelonLogger.Msg(MQOD.Instance.UI.FeatureSort.SortOrdering.sortItemGrid(ItemControllerArmory.ArmoryGrid)
                 ? "Sorted Armory"
                 : "There is nothing to sort :)");
         }

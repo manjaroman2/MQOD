@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 namespace MQOD
 {
-    public class BetterMinimap : _Feature, _Hookable
+    public class BetterMinimap : _Feature
     {
         public Image boundsImage;
         public Color boundsImage_color;
@@ -29,13 +29,6 @@ namespace MQOD
         private Vector2 rectTransform_anchorMin;
         private Vector2 rectTransform_pivot;
         public bool zoomedIn;
-
-        public void addHarmonyHooks()
-        {
-            // HarmonyHelper.Patch(typeof(MapObject_Doodad), nameof(MapObject_Doodad.Init),
-            //     new[] { typeof(MapObjectData), typeof(bool) }, postfixClazz: typeof(BetterMinimap),
-            //     postfixMethod: nameof(MapObject_Doodad__Init__Postfix));
-        }
 
         public void init()
         {
@@ -130,7 +123,7 @@ namespace MQOD
             config.MapDimensionUnits *= scalar;
             boundsImage_color = boundsImage.color;
             boundsImage.color = new Color(boundsImage_color.r, boundsImage_color.g, boundsImage_color.b,
-                MQOD.Instance.UI.minimapTransparency);
+                MQOD.Instance.UI.FeatureMinimap.minimapTransparency);
             // if (outline == null)
             // {
             //     outline = boundsImage.gameObject.AddComponent<Outline>();
@@ -174,5 +167,8 @@ namespace MQOD
         // {
         //     MelonLogger.Msg(__instance.transform);
         // }
+        protected override void addHarmonyHooks()
+        {
+        }
     }
 }

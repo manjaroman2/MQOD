@@ -5,11 +5,11 @@ using MelonLoader;
 
 namespace MQOD
 {
-    public class SortItemGrid : _Feature, _Hookable
+    public class SortItemGrid : _Feature
     {
         private bool enabled = true;
 
-        public void addHarmonyHooks()
+        protected override void addHarmonyHooks()
         {
             if (enabled) enableSorting();
         }
@@ -45,7 +45,7 @@ namespace MQOD
 
         private static void ItemGrid__Populate__Postfix(IEnumerable<Item> items, ref ItemGrid __instance)
         {
-            MelonLogger.Msg(MQOD.Instance.UI.Sort.SortOrdering.sortItemGrid(__instance)
+            MelonLogger.Msg(MQOD.Instance.UI.FeatureSort.SortOrdering.sortItemGrid(__instance)
                 ? "Sorted item grid"
                 : "Nothing to sort :)");
         }
