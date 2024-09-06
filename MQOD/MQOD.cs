@@ -92,10 +92,7 @@ namespace MQOD
         public override void OnLateUpdate()
         {
             if (!UI.initialized) return;
-            if (Input.GetKeyDown(KeyCode.L)) Player.Instance.Entity.Invulnerable.AddStack();
-            // if (Input.GetKeyDown(KeyCode.K))
-            //     MelonLogger.Msg("Width: " + Instance.GemRadiusVisualizerInst.GemRadiusCreator.quad
-            //         .GetComponent<Renderer>().material.GetFloat(GemRadiusCreator.__Width));
+            // if (Input.GetKeyDown(KeyCode.L)) Player.Instance.Entity.Invulnerable.AddStack();
 
             if (UI.FeatureMinimap.minimapFullscreenKey != null)
             {
