@@ -223,7 +223,7 @@ namespace MQOD
                 applyColor(FlatToColor(f));
                 onValueChanged(f);
             });
-            applyColor(FlatToColor(0.0f));
+            applyColor(FlatToColor(valueGetter()));
             slider.navigation = new Navigation
             {
                 mode = Navigation.Mode.None

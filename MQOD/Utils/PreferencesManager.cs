@@ -64,7 +64,7 @@ namespace MQOD
             {
                 Sort.Category.UNIQUENESS, Sort.Category.RARITY, Sort.Category.TIER, Sort.Category.TYPE
             });
-            gemRadiusColorFloat = Settings.CreateEntry("gemRadiusColorFloat", 0.0f);
+            gemRadiusColorFloat = Settings.CreateEntry("gemRadiusColorFloat", 592.0f);
             cameraZoomKeyEntry = Hotkeys.CreateEntry<KeyCode?>("cameraZoomKeyEntry", KeyCode.Semicolon);
             gemRadiusVisualizerToggleKeyEntry =
                 Hotkeys.CreateEntry<KeyCode?>("gemRadiusVisualizerToggleKeyEntry", KeyCode.Quote);
