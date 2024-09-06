@@ -1,3 +1,5 @@
+using System;
+using MelonLoader;
 using UnityEngine;
 using UniverseLib.UI;
 
@@ -9,7 +11,8 @@ namespace MQOD
         {
         }
 
-
+        public Action<Color> setToggleColor; 
+        
         public static float widthModifier
         {
             get => MQOD.Instance.preferencesManager.widthModifier.Value;
@@ -37,12 +40,16 @@ namespace MQOD
         protected override void ConstructPanelContent()
         {
             base.ConstructPanelContent();
-            createHotkey("Toggle", () => MQOD.Instance.preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value,
-                code => MQOD.Instance.preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value = code);
+            createHotkeyToggle(() => MQOD.Instance.preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value,
+                code => MQOD.Instance.preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value = code, out Action<Color> setColor);
+            setToggleColor = setColor;
+            setColor(MQOD.Instance.GemRadiusVisualizerInst.Shown.Value ? Color.green : Color.red);
             createSlider("Width Modifier", 0.01f, 1.00f,
                 f => { widthModifier = f; },
                 () => widthModifier);
             createColorSlider("Color", f => { colorFloat = f; }, () => colorFloat);
+            createDropdown("Shader", MQOD.Instance.GemRadiusVisualizerInst.ShaderOptions,
+                i => { MQOD.Instance.GemRadiusVisualizerInst.ShaderNumber.Value = i; }, MQOD.Instance.GemRadiusVisualizerInst.ShaderNumber.Value);
         }
     }
 }

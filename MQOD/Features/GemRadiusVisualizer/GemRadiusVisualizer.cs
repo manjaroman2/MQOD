@@ -25,6 +25,11 @@ namespace MQOD
         public readonly MelonPreferences_Entry<bool> Shown =
             MQOD.Instance.preferencesManager.addSettingsEntry("GemRadiusVisualizerShown", true);
 
+        public readonly MelonPreferences_Entry<int> ShaderNumber =
+            MQOD.Instance.preferencesManager.addSettingsEntry("GemRadiusVisualizerShaderNumber", 0);
+
+        public readonly string[] ShaderOptions = { "SimpleCircleShader", "CircleShaderPixel" };
+
         private Behaviour_GemCollector behaviourGemCollector;
         public GemRadiusCreator GemRadiusCreator;
         public float PullArea;
@@ -34,6 +39,7 @@ namespace MQOD
         {
             Shown.Value = !Shown.Value;
             if (GemRadiusCreator != null) GemRadiusCreator.quad.SetActive(Shown.Value);
+            MQOD.Instance.UI.FeatureGemVisualizer.setToggleColor(Shown.Value ? Color.green : Color.red);
         }
 
         public void updateScale()

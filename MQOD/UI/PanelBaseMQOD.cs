@@ -56,7 +56,7 @@ namespace MQOD
             GameObject row = CreateRow();
             Text HotkeyLabel = UIFactory.CreateLabel(row, hotkeyLabel, hotkeyLabel);
             HotkeyLabel.fontSize = fontSize;
-            HotkeyLabel.color = Color.green;
+            // HotkeyLabel.color = Color.green;
             UIFactory.SetLayoutElement(HotkeyLabel.gameObject, 25, 25, 1);
             ButtonRef Hotkey = UIFactory.CreateButton(row, $"{hotkeyLabel}Hotkey", keyCodeGetter().ToString());
             Hotkey.Component.GetComponentInChildren<Text>().fontSize = fontSize;
@@ -72,6 +72,48 @@ namespace MQOD
                 Hotkey.ButtonText.text = "<Press any key>";
             };
             return HotkeyLabel;
+
+            void OnSelection(KeyCode pressed)
+            {
+                if (keyTimout != null)
+                {
+                    keyTimout.AutoReset = false;
+                    keyTimout.Enabled = true;
+                }
+
+                InputManager.EndRebind();
+            }
+
+            void OnFinished(KeyCode? bound)
+            {
+                keyCodeSetter(bound);
+                Hotkey.ButtonText.text = keyCodeGetter().ToString();
+            }
+        }
+
+        protected void createHotkeyToggle(Func<KeyCode?> keyCodeGetter,
+            Action<KeyCode?> keyCodeSetter, out Action<Color> setColor, Timer keyTimout = null)
+        {
+            GameObject row = CreateRow();
+            setColor = color => { row.GetComponent<Image>().color = color; };
+            Text HotkeyLabel = UIFactory.CreateLabel(row, "Toggle", "Toggle");
+            HotkeyLabel.fontSize = fontSize;
+            // HotkeyLabel.color = Color.green;
+            UIFactory.SetLayoutElement(HotkeyLabel.gameObject, 25, 25, 1);
+            ButtonRef Hotkey = UIFactory.CreateButton(row, "ToggleHotkey", keyCodeGetter().ToString());
+            Hotkey.Component.GetComponentInChildren<Text>().fontSize = fontSize;
+            Hotkey.Component.navigation = new Navigation
+            {
+                mode = Navigation.Mode.None
+            };
+            UIFactory.SetLayoutElement(Hotkey.GameObject, 100, 25, 0);
+            Hotkey.OnClick += () =>
+            {
+                InputManager.BeginRebind(OnSelection, OnFinished);
+                keyCodeSetter(null);
+                Hotkey.ButtonText.text = "<Press any key>";
+            };
+            return;
 
             void OnSelection(KeyCode pressed)
             {
@@ -228,6 +270,22 @@ namespace MQOD
             {
                 mode = Navigation.Mode.None
             };
+        }
+
+        protected void createDropdown(string label, string[] options, Action<int> onValueChanged, int initalValue)
+        {
+            GameObject row = CreateRow();
+
+            Text Label = UIFactory.CreateLabel(row, label, $"{label}");
+            Label.fontSize = fontSize;
+            UIFactory.SetLayoutElement(Label.gameObject, 75, 25, 1);
+            GameObject gameObject_Dropdown = UIFactory.CreateDropdown(row, $"{label}DropDown", out Dropdown dropdown,
+                "test", fontSize,
+                onValueChanged, options);
+            UIFactory.SetLayoutElement(gameObject_Dropdown, 100, 25, 1);
+            dropdown.value = initalValue;
+            // GameObject GObj_Slider = CreateSlider(row, $"{label}Slider", out Slider slider, out Image image1,
+            //     out Image image2);
         }
 
         protected void createTextEntry(string label)

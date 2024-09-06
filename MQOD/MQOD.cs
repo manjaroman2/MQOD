@@ -165,7 +165,7 @@ namespace MQOD
                 CameraZoomInst.zoomOut();
 
             if (preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value != null &&
-                Input.GetKeyDown((KeyCode)preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value))
+                Input.GetKeyDown((KeyCode)preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value)) 
                 GemRadiusVisualizerInst.toggle();
 
             if (UI.toggleUIKey != null && UI.initialized && !UI.Main.toggleUITimer.Enabled &&

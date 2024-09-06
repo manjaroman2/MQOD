@@ -1,3 +1,4 @@
+using MelonLoader;
 using UnityEngine;
 
 namespace MQOD
@@ -22,27 +23,46 @@ namespace MQOD
             }
         }
 
+        private void applyShader()
+        {
+            MelonLogger.Msg("applyShader: " + GemRadiusShader); 
+            material = new Material(GemRadiusShader);
+            updateWidth();
+
+            material.SetColor("_Color",
+                PanelBaseMQOD.FlatToColor(MQOD.Instance.preferencesManager.gemRadiusColorFloat.Value));
+
+            MQOD.Instance.preferencesManager.gemRadiusColorFloat.OnEntryValueChanged.Subscribe((_, newVal) =>
+            {
+                material.SetColor("_Color", PanelBaseMQOD.FlatToColor(newVal));
+            });
+
+            if (quad != null) quad.GetComponent<Renderer>().material = material;
+        }
+
         private void Start()
         {
             // MelonLogger.Msg("GemRadiusCreator: Init");
 
             if (GemRadiusShader == null)
-                GemRadiusShader = MQOD.Instance.assetManager.bundle.LoadAsset<Shader>("SimpleCircleShader");
+            {
+                GemRadiusShader = MQOD.Instance.assetManager.bundle.LoadAsset<Shader>(
+                    MQOD.Instance.GemRadiusVisualizerInst.ShaderOptions[
+                        MQOD.Instance.GemRadiusVisualizerInst.ShaderNumber.Value]);
+                applyShader();
+                MQOD.Instance.GemRadiusVisualizerInst.ShaderNumber.OnEntryValueChanged.Subscribe((_, newVal) =>
+                {
+                    GemRadiusShader = MQOD.Instance.assetManager.bundle.LoadAsset<Shader>(
+                        MQOD.Instance.GemRadiusVisualizerInst.ShaderOptions[newVal]);
+                    applyShader();
+                });
+            }
             // MelonLogger.Msg($"GemRadiusCreator: Init {GemRadiusShader.name}");
 
             if (quad == null)
             {
                 // MelonLogger.Msg("GemRadiusCreator: Init Quad");
                 quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-                material = new Material(GemRadiusShader);
-                updateWidth();
-
-                MQOD.Instance.preferencesManager.gemRadiusColorFloat.OnEntryValueChanged.Subscribe((_, newVal) =>
-                {
-                    material.SetColor("_Color", PanelBaseMQOD.FlatToColor(newVal));
-                });
-                material.SetColor("_Color",
-                    PanelBaseMQOD.FlatToColor(MQOD.Instance.preferencesManager.gemRadiusColorFloat.Value));
                 quad.GetComponent<Renderer>().material = material;
                 quad.GetComponent<Renderer>().sortingLayerName = "Units";
                 quad.transform.SetParent(parentObject.transform);
