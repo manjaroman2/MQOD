@@ -10,7 +10,7 @@
         <AppDesignerFolder>Properties</AppDesignerFolder>
         <RootNamespace>MQOD</RootNamespace>
         <AssemblyName>MQOD</AssemblyName>
-        <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+        <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
         <FileAlignment>512</FileAlignment>
         <LangVersion>9</LangVersion>
         <RunPostBuildEvent>Always</RunPostBuildEvent>
@@ -46,6 +46,7 @@
         <PostBuildEvent>/home/marc/RiderProjects/MQOD/build-post.sh $(Configuration)</PostBuildEvent>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="Features\AutoStart.cs" />
         <Compile Include="Features\CameraZoom.cs"/>
         <Compile Include="Features\GemRadiusVisualizer\GemRadiusCreator.cs"/>
         <Compile Include="Features\GemRadiusVisualizer\GemRadiusVisualizer.cs"/>
@@ -71,6 +72,7 @@
         <Compile Include="Utils\FeatureManager.cs"/>
         <Compile Include="Utils\HarmonyHelper.cs"/>
         <Compile Include="Utils\PreferencesManager.cs"/>
+        <Compile Include="Utils\UnityHelper.cs" />
     </ItemGroup>
     <ItemGroup>
         <Reference Include="0Harmony">
@@ -118,6 +120,9 @@
         <Reference Include="MelonLoader">
             <HintPath>..\..\Death Must Die\MelonLoader\MelonLoader.dll</HintPath>
         </Reference>
+        <Reference Include="Mono.Security">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\Mono.Security.dll</HintPath>
+        </Reference>
         <Reference Include="Net35.Actions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a5ab967c088e8330, processorArchitecture=MSIL">
             <HintPath>..\packages\Net35.Actions.1.1.0\lib\net35\Net35.Actions.dll</HintPath>
         </Reference>
@@ -131,7 +136,64 @@
             <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\SolidUtilities.dll</HintPath>
         </Reference>
         <Reference Include="System">
-            <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.dll</HintPath>
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.dll</HintPath>
+        </Reference>
+        <Reference Include="System.ComponentModel.Composition">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.ComponentModel.Composition.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Configuration">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Configuration.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Core">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Core.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Data">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Data.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Data.DataSetExtensions">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Data.DataSetExtensions.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Drawing">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Drawing.dll</HintPath>
+        </Reference>
+        <Reference Include="System.EnterpriseServices">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.EnterpriseServices.dll</HintPath>
+        </Reference>
+        <Reference Include="System.IO.Compression">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.IO.Compression.dll</HintPath>
+        </Reference>
+        <Reference Include="System.IO.Compression.FileSystem">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.IO.Compression.FileSystem.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Net.Http">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Net.Http.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Numerics">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Numerics.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Runtime">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Runtime.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Runtime.CompilerServices.Unsafe">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Runtime.Serialization">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Runtime.Serialization.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Security">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Security.dll</HintPath>
+        </Reference>
+        <Reference Include="System.ServiceModel.Internals">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.ServiceModel.Internals.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Transactions">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Transactions.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Xml">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Xml.dll</HintPath>
+        </Reference>
+        <Reference Include="System.Xml.Linq">
+          <HintPath>..\..\Death Must Die\Death Must Die_Data\Managed\System.Xml.Linq.dll</HintPath>
         </Reference>
         <Reference Include="Tomlet">
             <HintPath>..\..\Death Must Die\MelonLoader\Tomlet.dll</HintPath>

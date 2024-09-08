@@ -164,4 +164,7 @@
   &lt;Assembly Path="/home/marc/RiderProjects/Death Must Die/Death Must Die_Data/Managed/Death.dll" /&gt;
   &lt;Assembly Path="/home/marc/RiderProjects/Death Must Die/Death Must Die_Data/Managed/SolidUtilities.dll" /&gt;
   &lt;Assembly Path="/home/marc/RiderProjects/Death Must Die/Death Must Die_Data/Managed/Assembly-CSharp.dll" /&gt;
+  &lt;Assembly Path="/home/marc/RiderProjects/Death Must Die/Death Must Die_Data/Managed/System.Runtime.dll" /&gt;
+  &lt;Assembly Path="/usr/lib/mono/2.0-api/mscorlib.dll" /&gt;
+  &lt;Assembly Path="/home/marc/RiderProjects/Death Must Die/Death Must Die_Data/Managed/mscorlib.dll" /&gt;
 &lt;/AssemblyExplorer&gt;</s:String></wpf:ResourceDictionary>

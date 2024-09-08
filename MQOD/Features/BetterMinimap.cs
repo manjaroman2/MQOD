@@ -1,7 +1,12 @@
+using System;
 using System.Reflection;
+using System.Threading;
+using Death.Data;
 using Death.ResourceManagement;
 using Death.Run.UserInterface.HUD.Minimap;
 using Death.UserInterface;
+using Death.Utils;
+using Death.WorldGen;
 using HarmonyLib;
 using MelonLoader;
 using UnityEngine;
@@ -16,19 +21,23 @@ namespace MQOD
         private RectTransform boundsImageRectTransform;
         private Vector2 boundsImageRectTransform_pivot;
         private Vector2 boundsImageRectTransform_sizeDelta;
-        private FieldInfo boundsWidthAccessor;
         private float boundsWidthAccessor_GetValue;
         private GUI_Minimap.Config config;
-        private float config_MapDimensionUnits;
+        private float default_config_MapDimensionUnits;
+        private float mapDimensionUnitsState;
         private GUI_Minimap guiMinimap;
         private GameObject Img_Frame;
-        private Outline outline;
         private RectTransform rectTransform;
         private Vector2 rectTransform_anchorMax;
 
         private Vector2 rectTransform_anchorMin;
         private Vector2 rectTransform_pivot;
-        public bool zoomedIn;
+        public bool IsFullscreen;
+        private int ZoomState;
+        private const int MaxZoomState = 5;
+
+        private readonly FieldInfo boundsImageAccessor = AccessTools.Field(typeof(GUI_Minimap), "_boundsImage");
+        private readonly FieldInfo boundsWidthAccessor = AccessTools.Field(typeof(GUI_Minimap), "_boundsWidth");
 
         public void init()
         {
@@ -47,21 +56,15 @@ namespace MQOD
                 return;
             }
 
-            boundsImage =
-                typeof(GUI_Minimap).GetField("_boundsImage", AccessTools.all)?.GetValue(guiMinimap) as Image;
+            boundsImage = (Image)boundsImageAccessor.GetValue(guiMinimap);
             if (boundsImage == null)
             {
                 MelonLogger.Error("BetterMinimap: boundsImage null");
                 return;
             }
 
-            boundsWidthAccessor = typeof(GUI_Minimap).GetField("_boundsWidth", AccessTools.all);
-            if (boundsWidthAccessor == null)
-            {
-                MelonLogger.Error("BetterMinimap: boundsWidthAccessor null");
-                return;
-            }
-
+            config ??= ConfigManager.Get<UIConfig>().Minimap;
+            default_config_MapDimensionUnits = config.MapDimensionUnits;
             initialized = true;
         }
 
@@ -73,8 +76,16 @@ namespace MQOD
                 return;
             }
 
-            config ??= ConfigManager.Get<UIConfig>().Minimap;
-            config.MapDimensionUnits += 10;
+            if (ZoomState >= MaxZoomState) return;
+            MelonLogger.Msg("ZoomOut");
+            setChunkViewRange(getChunkViewRange() + 1);
+            mapDimensionUnitsState += 40;
+            if (IsFullscreen)
+                config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits) * 4f;
+            else config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits);
+            MelonLogger.Msg("MapDimensionUnits: " + config.MapDimensionUnits);
+
+            ZoomState++;
         }
 
         public void zoomIn()
@@ -85,11 +96,19 @@ namespace MQOD
                 return;
             }
 
-            config ??= ConfigManager.Get<UIConfig>().Minimap;
-            config.MapDimensionUnits -= 10;
+            if (ZoomState <= 0) return;
+            MelonLogger.Msg("ZoomIn");
+            setChunkViewRange(getChunkViewRange() - 1);
+            mapDimensionUnitsState -= 40;
+            if (IsFullscreen)
+                config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits) * 4f;
+            else config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits);
+            MelonLogger.Msg("MapDimensionUnits: " + config.MapDimensionUnits);
+
+            ZoomState--;
         }
 
-        public void fullscreenMinimap(float scalar = 4f)
+        public void Fullscreen()
         {
             if (!initialized)
             {
@@ -97,9 +116,7 @@ namespace MQOD
                 return;
             }
 
-            if (zoomedIn)
-                // MelonLogger.Error("BetterMinimap: already zoomed in");
-                return;
+            if (IsFullscreen) return;
 
             Img_Frame.SetActive(false);
 
@@ -115,30 +132,22 @@ namespace MQOD
             boundsImageRectTransform_sizeDelta = boundsImageRectTransform.sizeDelta;
             boundsImageRectTransform_pivot = boundsImageRectTransform.pivot;
             boundsImageRectTransform.pivot = new Vector2(0.50f, 0.50f);
-            boundsImageRectTransform.sizeDelta = new Vector2(801, 801);
+
+            boundsImageRectTransform.sizeDelta = new Vector2(Screen.height - 100, Screen.height - 100);
             boundsWidthAccessor_GetValue = (float)boundsWidthAccessor.GetValue(guiMinimap);
-            boundsWidthAccessor.SetValue(guiMinimap, boundsWidthAccessor_GetValue * scalar);
-            config ??= ConfigManager.Get<UIConfig>().Minimap;
-            config_MapDimensionUnits = config.MapDimensionUnits;
-            config.MapDimensionUnits *= scalar;
+            boundsWidthAccessor.SetValue(guiMinimap, boundsWidthAccessor_GetValue * 4f);
             boundsImage_color = boundsImage.color;
             boundsImage.color = new Color(boundsImage_color.r, boundsImage_color.g, boundsImage_color.b,
                 MQOD.Instance.UIInst.FeatureMinimap.minimapTransparencyEntry.Value);
-            // if (outline == null)
-            // {
-            //     outline = boundsImage.gameObject.AddComponent<Outline>();
-            //     outline.effectColor = Color.red;
-            //     outline.effectDistance = new Vector2(1, -1);
-            //     outline.useGraphicAlpha = true;
-            // }
-            // outline.enabled = true;
 
-            zoomedIn = true;
+            config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits) * 4f;
+            MelonLogger.Msg("MapDimensionUnits: " + config.MapDimensionUnits);
+            IsFullscreen = true;
         }
 
-        public void resetFullscreen()
+        public void unFullscreen()
         {
-            if (!initialized || !zoomedIn) return;
+            if (!initialized || !IsFullscreen) return;
             Img_Frame.SetActive(true);
             rectTransform.anchorMin = rectTransform_anchorMin;
             rectTransform.anchorMax = rectTransform_anchorMax;
@@ -146,20 +155,71 @@ namespace MQOD
             boundsImageRectTransform.pivot = boundsImageRectTransform_pivot;
             boundsImageRectTransform.sizeDelta = boundsImageRectTransform_sizeDelta;
             boundsWidthAccessor.SetValue(guiMinimap, boundsWidthAccessor_GetValue);
-            config.MapDimensionUnits = config_MapDimensionUnits;
             boundsImage.color = boundsImage_color;
-            // outline.enabled = false;
-
-            zoomedIn = false;
+            config.MapDimensionUnits = default_config_MapDimensionUnits;
+            MelonLogger.Msg("MapDimensionUnits: " + config.MapDimensionUnits);
+            IsFullscreen = false;
         }
 
-        // private static void MapObject_Doodad__Init__Postfix(MapObjectData data, bool isExhausted,
-        //     MapObject_Doodad __instance)
-        // {
-        //     MelonLogger.Msg(__instance.transform);
-        // }
         protected override void addHarmonyHooks()
         {
+            HarmonyHelper.Patch(typeof(WorldGenerator), nameof(WorldGenerator.InitAsync),
+                new[] { typeof(WorldGenRecipe), typeof(Bounds2D) }, prefixClazz: typeof(BetterMinimap),
+                prefixMethod: nameof(Postfix__WorldGenerator__InitAsync));
+            HarmonyHelper.Patch(typeof(WorldGenerator), "RemoveChunk",
+                new[] { typeof(Vector2Int) }, prefixClazz: typeof(BetterMinimap),
+                prefixMethod: nameof(Postfix__WorldGenerator__RemoveChunk));
+            HarmonyHelper.Patch(typeof(WorldGenerator), "GenerateChunkAsync",
+                new[] { typeof(Vector2Int), typeof(CancellationToken) }, prefixClazz: typeof(BetterMinimap),
+                prefixMethod: nameof(Postfix__WorldGenerator__GenerateChunkAsync));
+            HarmonyHelper.Patch(typeof(WorldGenerator), "UpdateVisibleChunksAsync",
+                new[] { typeof(Bounds2D), typeof(CancellationToken) }, prefixClazz: typeof(BetterMinimap),
+                prefixMethod: nameof(Postfix__WorldGenerator__UpdateVisibleChunksAsync));
+        }
+
+        private static void Postfix__WorldGenerator__UpdateVisibleChunksAsync(
+            Bounds2D cameraWorldBounds,
+            CancellationToken token)
+        {
+            // MelonLogger.Msg($"============= Updating chunks =============");
+            // MelonLogger.Msg($"cameraWorldBounds {cameraWorldBounds}");
+            // MelonLogger.Msg(
+            //     $"cameraWorldBounds {MQOD.Instance.BetterMinimapInst.Coords.WorldToChunk(cameraWorldBounds.Center)}");
+        }
+
+        private static void Postfix__WorldGenerator__RemoveChunk(Vector2Int coords)
+        {
+            // MelonLogger.Msg($"Removing chunk at {coords}");
+        }
+
+        private static void Postfix__WorldGenerator__GenerateChunkAsync(Vector2Int coords, CancellationToken token)
+        {
+            // MelonLogger.Msg($"Generating chunk at {coords}");
+        }
+
+
+        private static readonly FieldInfo chunkViewRangeAccessor =
+            AccessTools.Field(typeof(WorldGenConfig), "_chunkViewRange");
+
+        private static readonly FieldInfo chunkCleanupRangeAccessor =
+            AccessTools.Field(typeof(WorldGenConfig), "_chunkCleanupRange");
+
+        public Action<int> setChunkViewRange { get; private set; }
+        public Func<int> getChunkViewRange { get; private set; }
+        public CoordUtils Coords;
+
+        private static void Postfix__WorldGenerator__InitAsync(WorldGenerator __instance, WorldGenConfig ____config,
+            WorldGenRecipe recipe, Bounds2D cameraWorldBounds)
+        {
+            Database.MapObjects.GetAllForAct(recipe.MapObjectAct);
+            MQOD.Instance.BetterMinimapInst.Coords = ____config.Coords;
+            MQOD.Instance.BetterMinimapInst.getChunkViewRange = () => (int)chunkViewRangeAccessor.GetValue(____config);
+            MQOD.Instance.BetterMinimapInst.setChunkViewRange = c =>
+            {
+                MelonLogger.Msg("chunkViewRange: " + c);
+                chunkViewRangeAccessor.SetValue(____config, c);
+                chunkCleanupRangeAccessor.SetValue(____config, c + 1);
+            };
         }
     }
 }

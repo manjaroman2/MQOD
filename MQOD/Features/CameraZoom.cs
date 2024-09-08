@@ -4,9 +4,10 @@ namespace MQOD
 {
     public class CameraZoom : _Feature
     {
-        private const int maxZoomState = 5;
+        private const int maxZoomState = 4;
         private float defaultZoom;
-        private int zoomState;
+        private int zoomState = 1;
+        private const float zoomScalar = 0.8f; 
 
         protected override void addHarmonyHooks()
         {
@@ -25,13 +26,13 @@ namespace MQOD
             if (!initialized) return;
             if (zoomState <= maxZoomState)
             {
-                RunCamera.Instance.OrthographicSize = defaultZoom + zoomState * 1.1f;
+                RunCamera.Instance.OrthographicSize = defaultZoom + zoomState * zoomScalar;
                 zoomState++;
             }
             else
             {
                 RunCamera.Instance.OrthographicSize = defaultZoom;
-                zoomState = 0;
+                zoomState = 1;
             }
         }
 

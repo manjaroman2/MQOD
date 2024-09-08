@@ -12,3 +12,8 @@ How to dev:
 - Add <YOUR_GIT_CLONE_PATH>/build-post.sh $(Configuration) to Project Properties > Build Events > Execute command after (always) (Replace <YOUR_GIT_CLONE_PATH> accordingly)
 - Edit build-post.sh to your needs (opsec fail)
 - Get the assets repo here: https://github.com/manjaroman2/MQODAssets
+
+
+### ideas:
+
+- continue/restart button (at death screen)

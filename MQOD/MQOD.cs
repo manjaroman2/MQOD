@@ -55,6 +55,9 @@ namespace MQOD
             BetterMinimapInst = featureManager.addFeature<BetterMinimap>();
             GemRadiusVisualizerInst = featureManager.addFeature<GemRadiusVisualizer>();
             CameraZoomInst = featureManager.addFeature<CameraZoom>();
+            #if DEBUG 
+            featureManager.addFeature<AutoStart>();
+            #endif
             featureManager.addHarmonyHooks();
 
 
@@ -90,23 +93,29 @@ namespace MQOD
             if (!UIInst.initialized) return;
             if (UIInst.keyReassignTimer.Enabled) return; // Handle keycodes
 
+            
             // if (Input.GetKeyDown(KeyCode.L)) Player.Instance.Entity.Invulnerable.AddStack();
+            // if (Input.GetKeyDown(KeyCode.L))
+            // {
+            //     BetterMinimapInst.setChunkViewRange(BetterMinimapInst.getChunkViewRange() + 1);
+            //     MelonLogger.Msg("New BetterMinimapInst.getChunkViewRange() " + BetterMinimapInst.getChunkViewRange());
+            // }
 
             if (UIInst.FeatureMinimap.minimapFullscreenKeyEntry.Value != null)
             {
                 if (!UIInst.FeatureMinimap.minimapZoomFunctionEntry.Value)
                 {
                     if (Input.GetKeyDown((KeyCode)UIInst.FeatureMinimap.minimapFullscreenKeyEntry.Value))
-                        BetterMinimapInst.fullscreenMinimap();
+                        BetterMinimapInst.Fullscreen();
                     else if (Input.GetKeyUp((KeyCode)UIInst.FeatureMinimap.minimapFullscreenKeyEntry.Value))
-                        BetterMinimapInst.resetFullscreen();
+                        BetterMinimapInst.unFullscreen();
                 }
                 else
                 {
                     if (Input.GetKeyDown((KeyCode)UIInst.FeatureMinimap.minimapFullscreenKeyEntry.Value))
                     {
-                        if (!BetterMinimapInst.zoomedIn) BetterMinimapInst.fullscreenMinimap();
-                        else BetterMinimapInst.resetFullscreen();
+                        if (!BetterMinimapInst.IsFullscreen) BetterMinimapInst.Fullscreen();
+                        else BetterMinimapInst.unFullscreen();
                     }
                 }
             }

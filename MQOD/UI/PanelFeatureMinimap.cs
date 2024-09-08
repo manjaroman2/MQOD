@@ -39,7 +39,7 @@ namespace MQOD
             createSlider("Opacity", 0.01f, 1.00f, f =>
             {
                 minimapTransparencyEntry.Value = f;
-                if (MQOD.Instance.BetterMinimapInst.initialized && MQOD.Instance.BetterMinimapInst.zoomedIn)
+                if (MQOD.Instance.BetterMinimapInst.initialized && MQOD.Instance.BetterMinimapInst.IsFullscreen)
                 {
                     Color boundsImage_color = MQOD.Instance.BetterMinimapInst.boundsImage_color;
                     MQOD.Instance.BetterMinimapInst.boundsImage.color = new Color(boundsImage_color.r,
