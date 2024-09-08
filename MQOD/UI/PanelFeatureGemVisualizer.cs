@@ -1,33 +1,28 @@
 using System;
 using MelonLoader;
 using UnityEngine;
-using UniverseLib.UI;
 
 namespace MQOD
 {
     public class PanelFeatureGemVisualizer : PanelBaseMQOD
     {
-        public PanelFeatureGemVisualizer(UIBase owner) : base(owner)
-        {
-        }
+        public readonly MelonPreferences_Entry<float> gemRadiusColorFloatEntry;
+        public readonly MelonPreferences_Entry<KeyCode?> gemRadiusVisualizerToggleKeyEntry;
+        public readonly MelonPreferences_Entry<float> widthModifierEntry;
 
-        public Action<Color> setToggleColor; 
-        
-        public static float widthModifier
+        public Action<Color> setToggleColor;
+
+        public PanelFeatureGemVisualizer(UIBaseMQOD owner) : base(owner)
         {
-            get => MQOD.Instance.preferencesManager.widthModifier.Value;
-            set
+            widthModifierEntry = prefManager.addSettingsEntry("gemVisualizerWidthModifierEntry", 0.5f);
+            gemRadiusColorFloatEntry = prefManager.addSettingsEntry("gemRadiusColorFloat", 592.0f);
+            widthModifierEntry.OnEntryValueChanged.Subscribe((_, newValue) =>
             {
-                MQOD.Instance.preferencesManager.widthModifier.Value = value;
                 if (MQOD.Instance.GemRadiusVisualizerInst.GemRadiusCreator != null)
-                    MQOD.Instance.GemRadiusVisualizerInst.GemRadiusCreator.updateWidth();
-            }
-        }
-
-        public static float colorFloat
-        {
-            get => MQOD.Instance.preferencesManager.gemRadiusColorFloat.Value;
-            set => MQOD.Instance.preferencesManager.gemRadiusColorFloat.Value = value;
+                    MQOD.Instance.GemRadiusVisualizerInst.GemRadiusCreator.updateWidth(newValue);
+            });
+            gemRadiusVisualizerToggleKeyEntry =
+                prefManager.addHotkeyEntry("gemRadiusVisualizerToggleKeyEntry");
         }
 
         public override string Name => "MQOD - Gem Visualizer";
@@ -37,19 +32,22 @@ namespace MQOD
         public override Vector2 DefaultAnchorMax => new(0.10f, 0.90f);
         public override bool CanDragAndResize => true;
 
-        protected override void ConstructPanelContent()
+        protected override void LateConstructUI()
         {
-            base.ConstructPanelContent();
-            createHotkeyToggle(() => MQOD.Instance.preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value,
-                code => MQOD.Instance.preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value = code, out Action<Color> setColor);
+            createHotkeyToggle(() => gemRadiusVisualizerToggleKeyEntry.Value,
+                code => gemRadiusVisualizerToggleKeyEntry.Value = code,
+                out Action<Color> setColor);
             setToggleColor = setColor;
             setColor(MQOD.Instance.GemRadiusVisualizerInst.Shown.Value ? Color.green : Color.red);
             createSlider("Width Modifier", 0.01f, 1.00f,
-                f => { widthModifier = f; },
-                () => widthModifier);
-            createColorSlider("Color", f => { colorFloat = f; }, () => colorFloat);
+                f => { widthModifierEntry.Value = f; },
+                () => widthModifierEntry.Value);
+            createColorSlider("Color", f => { gemRadiusColorFloatEntry.Value = f; },
+                () => gemRadiusColorFloatEntry.Value);
             createDropdown("Shader", MQOD.Instance.GemRadiusVisualizerInst.ShaderOptions,
-                i => { MQOD.Instance.GemRadiusVisualizerInst.ShaderNumber.Value = i; }, MQOD.Instance.GemRadiusVisualizerInst.ShaderNumber.Value);
+                i => { MQOD.Instance.GemRadiusVisualizerInst.ShaderNumber.Value = i; },
+                MQOD.Instance.GemRadiusVisualizerInst.ShaderNumber.Value);
+            base.LateConstructUI();
         }
     }
 }

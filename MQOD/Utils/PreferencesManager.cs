@@ -11,38 +11,13 @@ namespace MQOD
 {
     public class PreferencesManager
     {
-        private readonly List<MelonPreferences_Entry> entries = new();
-        public MelonPreferences_Entry<KeyCode?> cameraZoomKeyEntry;
-        public MelonPreferences_Entry<Sort.Ordering> customSortOrderingEntry;
-        public MelonPreferences_Entry<float> gemRadiusColorFloat;
-        public MelonPreferences_Entry<KeyCode?> gemRadiusVisualizerToggleKeyEntry;
-        public MelonPreferences_Category Hotkeys;
-        public MelonPreferences_Entry<KeyCode?> minimapFullscreenKeyEntry;
-        public MelonPreferences_Entry<float> minimapTransparencyEntry;
-        public MelonPreferences_Entry<bool> minimapZoomFunctionEntry;
-        public MelonPreferences_Entry<KeyCode?> minimapZoomInKeyEntry;
-        public MelonPreferences_Entry<KeyCode?> minimapZoomOutKeyEntry;
-        public MelonPreferences_Category Settings;
-        public MelonPreferences_Entry<KeyCode?> sortingKeyEntry;
-        public MelonPreferences_Entry<KeyCode?> toggleAutoSortingKeyEntry;
-        public MelonPreferences_Entry<KeyCode?> toggleUIKeyEntry;
-        public MelonPreferences_Entry<float> widthModifier;
+        private readonly HashSet<KeyCode> activeKeybinds = new();
+        private readonly List<MelonPreferences_Entry> Entries = new();
+        private readonly MelonPreferences_Category Hotkeys = MelonPreferences.CreateCategory("Hotkeys");
+        private readonly MelonPreferences_Category Settings = MelonPreferences.CreateCategory("Settings");
 
-        public void init()
+        public PreferencesManager()
         {
-            MelonLogger.Msg("PreferencesManager Init");
-            Hotkeys = MelonPreferences.CreateCategory("Hotkeys");
-            sortingKeyEntry = Hotkeys.CreateEntry<KeyCode?>("sortingKey", KeyCode.S);
-            toggleAutoSortingKeyEntry = Hotkeys.CreateEntry<KeyCode?>("toggleAutoSortingKey", KeyCode.P);
-            toggleUIKeyEntry = Hotkeys.CreateEntry<KeyCode?>("toggleUIKeyEntry", KeyCode.U);
-            minimapFullscreenKeyEntry = Hotkeys.CreateEntry<KeyCode?>("minimapFullscreenEntry", KeyCode.Tab);
-            minimapZoomOutKeyEntry = Hotkeys.CreateEntry<KeyCode?>("minimapZoomOutEntry", KeyCode.Minus);
-            minimapZoomInKeyEntry = Hotkeys.CreateEntry<KeyCode?>("minimapZoomInEntry", KeyCode.Equals);
-            Settings = MelonPreferences.CreateCategory("Settings");
-            minimapZoomFunctionEntry =
-                Settings.CreateEntry("minimapZoomFunctionEntry", false);
-            minimapTransparencyEntry = Settings.CreateEntry("minimapTransparencyEntry", 0.3f);
-            widthModifier = Settings.CreateEntry("gemVisualizerWidthModifierEntry", 0.5f);
             TomletMain.RegisterMapper(ordering =>
             {
                 TomlArray tomlArray = new();
@@ -60,20 +35,65 @@ namespace MQOD
 
                 return ordering;
             });
-            customSortOrderingEntry = Settings.CreateEntry("customSortOrderingEntry", new Sort.Ordering
-            {
-                Sort.Category.UNIQUENESS, Sort.Category.RARITY, Sort.Category.TIER, Sort.Category.TYPE
-            });
-            gemRadiusColorFloat = Settings.CreateEntry("gemRadiusColorFloat", 592.0f);
-            cameraZoomKeyEntry = Hotkeys.CreateEntry<KeyCode?>("cameraZoomKeyEntry", KeyCode.Semicolon);
-            gemRadiusVisualizerToggleKeyEntry =
-                Hotkeys.CreateEntry<KeyCode?>("gemRadiusVisualizerToggleKeyEntry", KeyCode.Quote);
         }
 
         public MelonPreferences_Entry<T> addSettingsEntry<T>(string identifier, T default_value)
         {
             MelonPreferences_Entry<T> entry = Settings.CreateEntry(identifier, default_value);
-            entries.Add(entry);
+            Entries.Add(entry);
+            return entry;
+        }
+
+        public MelonPreferences_Entry<KeyCode?> addHotkeyEntry(string identifier, KeyCode? default_value = null)
+        {
+            MelonPreferences_Entry<KeyCode?> entry = Hotkeys.CreateEntry(identifier, default_value);
+            if (default_value != null) activeKeybinds.Add((KeyCode)default_value);
+
+            bool flag = false;
+            entry.OnEntryValueChanged.Subscribe((oldKeyCode, newKeyCode) =>
+            {
+                MelonLogger.Msg($"{identifier} {oldKeyCode}=>{newKeyCode}");
+                // MelonLogger.Msg(
+                //     $"{string.Join(",", activeKeybinds.ToList().ConvertAll(input => input.ToString()).ToArray())}");
+                if (newKeyCode == null) return;
+                if (newKeyCode == KeyCode.Escape)
+                {
+                    if (oldKeyCode != null) activeKeybinds.Remove((KeyCode)oldKeyCode);
+                    entry.Value = null;
+                    return;
+                }
+
+                if (!activeKeybinds.Contains((KeyCode)newKeyCode))
+                {
+                    activeKeybinds.Add((KeyCode)newKeyCode);
+                    if (oldKeyCode != null) activeKeybinds.Remove((KeyCode)oldKeyCode);
+                }
+                else if (!flag)
+                {
+                    flag = true;
+                    entry.Value = oldKeyCode;
+                    flag = false;
+                }
+                else
+                {
+                    activeKeybinds.Add((KeyCode)newKeyCode);
+                }
+                // else if (newKeyCode != oldKeyCode) 
+                // {
+                //     if (!flag)
+                //     {
+                //         MelonLogger.Warning($"Double assignment of key {newKeyCode}!") ;
+                //         flag = true;
+                //     }
+                //     entry.Value = oldKeyCode;
+                //     
+                // }
+                // else
+                // {
+                //     activeKeybinds.Remove((KeyCode)oldKeyCode);
+                // }
+            });
+            Entries.Add(entry);
             return entry;
         }
     }

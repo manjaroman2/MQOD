@@ -1,12 +1,15 @@
+using MelonLoader;
 using UnityEngine;
-using UniverseLib.UI;
 
 namespace MQOD
 {
     public class PanelFeatureCamera : PanelBaseMQOD
     {
-        public PanelFeatureCamera(UIBase owner) : base(owner)
+        public readonly MelonPreferences_Entry<KeyCode?> cameraZoomKeyEntry;
+
+        public PanelFeatureCamera(UIBaseMQOD owner) : base(owner)
         {
+            cameraZoomKeyEntry = prefManager.addHotkeyEntry("cameraZoomKeyEntry");
         }
 
         public override string Name => "MQOD - Camera Settings";
@@ -16,16 +19,10 @@ namespace MQOD
         public override Vector2 DefaultAnchorMax => new(0.10f, 0.90f);
         public override bool CanDragAndResize => true;
 
-        public KeyCode? cameraZoomKey
+        protected override void LateConstructUI()
         {
-            get => MQOD.Instance.preferencesManager.cameraZoomKeyEntry.Value;
-            set => MQOD.Instance.preferencesManager.cameraZoomKeyEntry.Value = value;
-        }
-
-        protected override void ConstructPanelContent()
-        {
-            base.ConstructPanelContent();
-            createHotkey("Camera Zoom", () => cameraZoomKey, code => cameraZoomKey = code);
+            createHotkey("Camera Zoom", () => cameraZoomKeyEntry.Value, code => cameraZoomKeyEntry.Value = code);
+            base.LateConstructUI();
         }
     }
 }

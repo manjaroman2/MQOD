@@ -1,36 +1,36 @@
 using System.IO;
+using System.Timers;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
 using UniverseLib;
 using UniverseLib.Config;
-using UniverseLib.UI;
 
 namespace MQOD
 {
-    public class UIMQOD
+    public class UI
     {
         private const float startupDelay = 0f;
+
+        public readonly Timer keyReassignTimer = new(1000)
+        {
+            AutoReset = false
+        };
+
         public PanelFeatureCamera FeatureCamera;
         public PanelFeatureGemVisualizer FeatureGemVisualizer;
         public PanelFeatureMinimap FeatureMinimap;
         public PanelFeatureSort FeatureSort;
         public bool initialized;
+
+        public bool isAssigning = false;
         public PanelMain Main;
-        public UIBase UIBase;
+        public UIBaseMQOD UIBase;
         public int fontSize { get; set; }
-
-
-        public KeyCode? toggleUIKey
-        {
-            get => MQOD.Instance.preferencesManager.toggleUIKeyEntry.Value;
-            set => MQOD.Instance.preferencesManager.toggleUIKeyEntry.Value = value;
-        }
-
 
         public void init()
         {
-            MelonLogger.Msg("UIMQOD init");
+            MelonLogger.Msg("UI init");
             UniverseLibConfig config = new()
             {
                 Disable_EventSystem_Override = false,
@@ -49,7 +49,7 @@ namespace MQOD
         private void OnInitialized()
         {
             MelonLogger.Msg("UIMQOD OnInitialized");
-            UIBase = UniversalUI.RegisterUI("mj.MQOD", UiUpdate);
+            UIBase = new UIBaseMQOD("mj.MQOD", UiUpdate, MQOD.Instance.preferencesManager);
             FeatureSort = new PanelFeatureSort(UIBase) { Enabled = false };
             FeatureGemVisualizer = new PanelFeatureGemVisualizer(UIBase) { Enabled = false };
             FeatureMinimap = new PanelFeatureMinimap(UIBase) { Enabled = false };

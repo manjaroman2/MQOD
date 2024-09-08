@@ -22,13 +22,13 @@ namespace MQOD
         private static readonly FieldInfo _isPrimaryPlayerInstance_Accessor =
             AccessTools.Field(typeof(Behaviour_Player), "_isPrimaryPlayerInstance");
 
-        public readonly MelonPreferences_Entry<bool> Shown =
-            MQOD.Instance.preferencesManager.addSettingsEntry("GemRadiusVisualizerShown", true);
-
         public readonly MelonPreferences_Entry<int> ShaderNumber =
             MQOD.Instance.preferencesManager.addSettingsEntry("GemRadiusVisualizerShaderNumber", 0);
 
         public readonly string[] ShaderOptions = { "SimpleCircleShader", "CircleShaderPixel" };
+
+        public readonly MelonPreferences_Entry<bool> Shown =
+            MQOD.Instance.preferencesManager.addSettingsEntry("GemRadiusVisualizerShown", true);
 
         private Behaviour_GemCollector behaviourGemCollector;
         public GemRadiusCreator GemRadiusCreator;
@@ -39,7 +39,7 @@ namespace MQOD
         {
             Shown.Value = !Shown.Value;
             if (GemRadiusCreator != null) GemRadiusCreator.quad.SetActive(Shown.Value);
-            MQOD.Instance.UI.FeatureGemVisualizer.setToggleColor(Shown.Value ? Color.green : Color.red);
+            MQOD.Instance.UIInst.FeatureGemVisualizer.setToggleColor(Shown.Value ? Color.green : Color.red);
         }
 
         public void updateScale()

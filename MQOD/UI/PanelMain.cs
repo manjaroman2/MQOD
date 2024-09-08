@@ -1,15 +1,15 @@
-using System.Timers;
+using MelonLoader;
 using UnityEngine;
-using UniverseLib.UI;
 
 namespace MQOD
 {
     public class PanelMain : PanelBaseMQOD
     {
-        public readonly Timer toggleUITimer = new(1000);
+        public readonly MelonPreferences_Entry<KeyCode?> toggleUIKeyEntry;
 
-        public PanelMain(UIBase owner) : base(owner)
+        public PanelMain(UIBaseMQOD owner) : base(owner)
         {
+            toggleUIKeyEntry = prefManager.addHotkeyEntry("toggleUIKeyEntry", KeyCode.U);
         }
 
         public override string Name => "MQOD - Settings";
@@ -19,18 +19,15 @@ namespace MQOD
         public override Vector2 DefaultAnchorMax => new(0.00f, 1.00f);
         public override bool CanDragAndResize => true;
 
-        protected override void ConstructPanelContent()
+        protected override void LateConstructUI()
         {
-            base.ConstructPanelContent();
+            createHotkey("UIToggle", toggleUIKeyEntry);
+            createPanelSwitch("Custom Sort", MQOD.Instance.UIInst.FeatureSort);
+            createPanelSwitch("Minimap", MQOD.Instance.UIInst.FeatureMinimap);
 
-            createHotkey("UIToggle", () => MQOD.Instance.UI.toggleUIKey,
-                code => MQOD.Instance.UI.toggleUIKey = code,
-                toggleUITimer);
-            createPanelSwitch("Custom Sort", MQOD.Instance.UI.FeatureSort);
-            createPanelSwitch("Minimap", MQOD.Instance.UI.FeatureMinimap);
-
-            createPanelSwitch("Gem Visualizer", MQOD.Instance.UI.FeatureGemVisualizer);
-            createPanelSwitch("Camera Zoom", MQOD.Instance.UI.FeatureCamera);
+            createPanelSwitch("Gem Visualizer", MQOD.Instance.UIInst.FeatureGemVisualizer);
+            createPanelSwitch("Camera Zoom", MQOD.Instance.UIInst.FeatureCamera);
+            base.LateConstructUI();
         }
     }
 }

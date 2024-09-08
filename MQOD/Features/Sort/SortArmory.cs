@@ -16,9 +16,11 @@ namespace MQOD
 
         public void sort()
         {
-            MelonLogger.Msg(MQOD.Instance.UI.FeatureSort.SortOrdering.sortItemGrid(ItemControllerArmory.ArmoryGrid)
-                ? "Sorted Armory"
-                : "There is nothing to sort :)");
+            MelonLogger.Msg(
+                MQOD.Instance.UIInst.FeatureSort.customSortOrderingEntry.Value.sortItemGrid(ItemControllerArmory
+                    .ArmoryGrid)
+                    ? "Sorted Armory"
+                    : "There is nothing to sort :)");
         }
 
 

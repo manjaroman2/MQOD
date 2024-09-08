@@ -19,25 +19,8 @@ namespace MQOD
             {
                 _Scale = value;
                 setQuadScale();
-                updateWidth();
+                updateWidth(MQOD.Instance.UIInst.FeatureGemVisualizer.widthModifierEntry.Value);
             }
-        }
-
-        private void applyShader()
-        {
-            MelonLogger.Msg("applyShader: " + GemRadiusShader); 
-            material = new Material(GemRadiusShader);
-            updateWidth();
-
-            material.SetColor("_Color",
-                PanelBaseMQOD.FlatToColor(MQOD.Instance.preferencesManager.gemRadiusColorFloat.Value));
-
-            MQOD.Instance.preferencesManager.gemRadiusColorFloat.OnEntryValueChanged.Subscribe((_, newVal) =>
-            {
-                material.SetColor("_Color", PanelBaseMQOD.FlatToColor(newVal));
-            });
-
-            if (quad != null) quad.GetComponent<Renderer>().material = material;
         }
 
         private void Start()
@@ -75,16 +58,30 @@ namespace MQOD
             // MelonLogger.Msg("GemRadiusCreator: Initialized!");
         }
 
+        private void applyShader()
+        {
+            MelonLogger.Msg("applyShader: " + GemRadiusShader);
+            material = new Material(GemRadiusShader);
+            updateWidth(MQOD.Instance.UIInst.FeatureGemVisualizer.widthModifierEntry.Value);
+
+            material.SetColor("_Color",
+                PanelBaseMQOD.FlatToColor(MQOD.Instance.UIInst.FeatureGemVisualizer.gemRadiusColorFloatEntry.Value));
+
+            MQOD.Instance.UIInst.FeatureGemVisualizer.gemRadiusColorFloatEntry.OnEntryValueChanged.Subscribe(
+                (_, newVal) => { material.SetColor("_Color", PanelBaseMQOD.FlatToColor(newVal)); });
+
+            if (quad != null) quad.GetComponent<Renderer>().material = material;
+        }
+
         public void setParentObject(GameObject obj)
         {
             parentObject = obj;
         }
 
-        public void updateWidth()
+        public void updateWidth(float widthModifier)
         {
             _Width = 1 / _Scale;
-            if (MQOD.Instance.UI.FeatureGemVisualizer != null) _Width *= 2 * PanelFeatureGemVisualizer.widthModifier;
-
+            _Width *= 2 * widthModifier;
             setWidth();
         }
 

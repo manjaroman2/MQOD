@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
 using UniverseLib.UI;
@@ -7,28 +8,19 @@ namespace MQOD
 {
     public class PanelFeatureSort : PanelBaseMQOD
     {
+        public readonly MelonPreferences_Entry<Sort.Ordering> customSortOrderingEntry;
+        public readonly MelonPreferences_Entry<KeyCode?> sortingKeyEntry;
+        public readonly MelonPreferences_Entry<KeyCode?> toggleAutoSortingKeyEntry;
         public Text toggleAutoSortingLabel;
 
-        public PanelFeatureSort(UIBase owner) : base(owner)
+        public PanelFeatureSort(UIBaseMQOD owner) : base(owner)
         {
-        }
-
-        public Sort.Ordering SortOrdering
-        {
-            get => MQOD.Instance.preferencesManager.customSortOrderingEntry.Value;
-            set => MQOD.Instance.preferencesManager.customSortOrderingEntry.Value = value;
-        }
-
-        public KeyCode? sortingKey
-        {
-            get => MQOD.Instance.preferencesManager.sortingKeyEntry.Value;
-            set => MQOD.Instance.preferencesManager.sortingKeyEntry.Value = value;
-        }
-
-        public KeyCode? toggleAutoSortingKey
-        {
-            get => MQOD.Instance.preferencesManager.toggleAutoSortingKeyEntry.Value;
-            set => MQOD.Instance.preferencesManager.toggleAutoSortingKeyEntry.Value = value;
+            sortingKeyEntry = prefManager.addHotkeyEntry("sortingKey");
+            toggleAutoSortingKeyEntry = prefManager.addHotkeyEntry("toggleAutoSortingKey");
+            customSortOrderingEntry = prefManager.addSettingsEntry("customSortOrderingEntry", new Sort.Ordering
+            {
+                Sort.Category.UNIQUENESS, Sort.Category.RARITY, Sort.Category.TIER, Sort.Category.TYPE
+            });
         }
 
         public override string Name => "MQOD - Custom Sort Settings";
@@ -38,16 +30,15 @@ namespace MQOD
         public override Vector2 DefaultAnchorMax => new(0.10f, 0.90f);
         public override bool CanDragAndResize => true;
 
-        protected override void ConstructPanelContent()
+        protected override void LateConstructUI()
         {
-            base.ConstructPanelContent();
-            createHotkey("Sorting", () => sortingKey, code => sortingKey = code);
-            createHotkey("toggleAutoSorting [enabled]", () => toggleAutoSortingKey, code => toggleAutoSortingKey = code,
-                out toggleAutoSortingLabel);
+            createHotkey("Sorting", sortingKeyEntry);
+            createHotkey("toggleAutoSorting [enabled]", toggleAutoSortingKeyEntry, out toggleAutoSortingLabel);
 
             List<Text> texts = new();
             Dictionary<Text, Sort.Category> CategoryIndex = new();
 
+            Sort.Ordering SortOrdering = customSortOrderingEntry.Value;
             foreach (Sort.Category category in SortOrdering)
             {
                 Text text = UIFactory.CreateLabel(ContentRoot, category.GetString(), category.GetString(),
@@ -77,11 +68,8 @@ namespace MQOD
                     // MelonLogger.Msg("D");
                 };
             }
-        }
 
-        public void loadVariables(Sort.Ordering entries)
-        {
-            SortOrdering = entries;
+            base.LateConstructUI();
         }
     }
 }

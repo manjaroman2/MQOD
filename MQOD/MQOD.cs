@@ -1,6 +1,6 @@
 ﻿using System;
 using Claw.UserInterface.Screens;
-using Death.Run.Behaviours;
+using Death;
 using Death.TimesRealm;
 using Death.TimesRealm.UserInterface;
 using Death.UserInterface;
@@ -13,22 +13,21 @@ namespace MQOD
     {
         private static MQOD _Instance;
 
-
         public readonly AssetManager assetManager = new();
         private readonly FeatureManager featureManager = new();
         public readonly PreferencesManager preferencesManager = new();
         public BetterMinimap BetterMinimapInst;
         public CameraZoom CameraZoomInst;
         public GemRadiusVisualizer GemRadiusVisualizerInst;
-        public bool IsRun;
+
+        protected bool isRun;
         public ScreenManager ScreenManager;
 
         public SortArmory SortArmoryInst;
         public SortItemGrid SortItemGridInst;
         public SortShop SortShopInst;
         public SortStash SortStashInst;
-        public UIMQOD UI;
-        public UniverseLibHooks UniverseLibHooksInst;
+        public UI UIInst;
 
         public static MQOD Instance
         {
@@ -46,11 +45,8 @@ namespace MQOD
             _Instance = this;
 
             assetManager.init();
-            preferencesManager.init();
-            UniverseLibHooksInst = new UniverseLibHooks();
-            UniverseLibHooksInst.applyHarmonyHooks();
-            UI = new UIMQOD();
-            UI.init();
+            UIInst = new UI();
+            UIInst.init();
 
             SortItemGridInst = featureManager.addFeature<SortItemGrid>();
             SortStashInst = featureManager.addFeature<SortStash>();
@@ -71,13 +67,13 @@ namespace MQOD
             switch (sceneName)
             {
                 case "Scene_Run":
-                    IsRun = true;
+                    isRun = true;
                     break;
                 case "Scene_RunGUI":
                     BetterMinimapInst.init();
                     break;
                 case "Scene_TimesRealm":
-                    IsRun = false;
+                    isRun = false;
                     break;
                 case "Scene_LobbyGUI":
                     break;
@@ -91,21 +87,23 @@ namespace MQOD
 
         public override void OnLateUpdate()
         {
-            if (!UI.initialized) return;
+            if (!UIInst.initialized) return;
+            if (UIInst.keyReassignTimer.Enabled) return; // Handle keycodes
+
             // if (Input.GetKeyDown(KeyCode.L)) Player.Instance.Entity.Invulnerable.AddStack();
 
-            if (UI.FeatureMinimap.minimapFullscreenKey != null)
+            if (UIInst.FeatureMinimap.minimapFullscreenKeyEntry.Value != null)
             {
-                if (!UI.FeatureMinimap.MinimapZoomFunction)
+                if (!UIInst.FeatureMinimap.minimapZoomFunctionEntry.Value)
                 {
-                    if (Input.GetKeyDown((KeyCode)UI.FeatureMinimap.minimapFullscreenKey))
+                    if (Input.GetKeyDown((KeyCode)UIInst.FeatureMinimap.minimapFullscreenKeyEntry.Value))
                         BetterMinimapInst.fullscreenMinimap();
-                    else if (Input.GetKeyUp((KeyCode)UI.FeatureMinimap.minimapFullscreenKey))
+                    else if (Input.GetKeyUp((KeyCode)UIInst.FeatureMinimap.minimapFullscreenKeyEntry.Value))
                         BetterMinimapInst.resetFullscreen();
                 }
                 else
                 {
-                    if (Input.GetKeyDown((KeyCode)UI.FeatureMinimap.minimapFullscreenKey))
+                    if (Input.GetKeyDown((KeyCode)UIInst.FeatureMinimap.minimapFullscreenKeyEntry.Value))
                     {
                         if (!BetterMinimapInst.zoomedIn) BetterMinimapInst.fullscreenMinimap();
                         else BetterMinimapInst.resetFullscreen();
@@ -113,15 +111,15 @@ namespace MQOD
                 }
             }
 
-            if (UI.FeatureMinimap.minimapZoomOutKey != null &&
-                Input.GetKeyDown((KeyCode)UI.FeatureMinimap.minimapZoomOutKey))
+            if (UIInst.FeatureMinimap.minimapZoomOutKeyEntry.Value != null &&
+                Input.GetKeyDown((KeyCode)UIInst.FeatureMinimap.minimapZoomOutKeyEntry.Value))
                 BetterMinimapInst.zoomOut();
-            if (UI.FeatureMinimap.minimapZoomInKey != null &&
-                Input.GetKeyDown((KeyCode)UI.FeatureMinimap.minimapZoomInKey))
+            if (UIInst.FeatureMinimap.minimapZoomInKeyEntry.Value != null &&
+                Input.GetKeyDown((KeyCode)UIInst.FeatureMinimap.minimapZoomInKeyEntry.Value))
                 BetterMinimapInst.zoomIn();
 
-            if (UI.FeatureSort.toggleAutoSortingKey != null &&
-                Input.GetKeyDown((KeyCode)UI.FeatureSort.toggleAutoSortingKey)) // middle click or S 
+            if (UIInst.FeatureSort.toggleAutoSortingKeyEntry.Value != null &&
+                Input.GetKeyDown((KeyCode)UIInst.FeatureSort.toggleAutoSortingKeyEntry.Value)) // middle click or S 
             {
                 SortItemGridInst.toggleSorting();
                 Color color;
@@ -137,16 +135,17 @@ namespace MQOD
                     text = "disabled";
                 }
 
-                if (UI.FeatureSort.toggleAutoSortingLabel != null)
+                if (UIInst.FeatureSort.toggleAutoSortingLabel != null)
                 {
-                    UI.FeatureSort.toggleAutoSortingLabel.color = color;
-                    UI.FeatureSort.toggleAutoSortingLabel.text = $"toggleAutoSorting [{text}]";
+                    UIInst.FeatureSort.toggleAutoSortingLabel.color = color;
+                    UIInst.FeatureSort.toggleAutoSortingLabel.text = $"toggleAutoSorting [{text}]";
                 }
 
                 MelonLogger.Msg($"Item grid sorting: {text}");
             }
 
-            if (UI.FeatureSort.sortingKey != null && Input.GetKeyDown((KeyCode)UI.FeatureSort.sortingKey) &&
+            if (UIInst.FeatureSort.sortingKeyEntry.Value != null &&
+                Input.GetKeyDown((KeyCode)UIInst.FeatureSort.sortingKeyEntry.Value) &&
                 ScreenManager != null)
                 switch (ScreenManager.CurrentScreen)
                 {
@@ -161,17 +160,22 @@ namespace MQOD
                         break;
                 }
 
-            if (UI.FeatureCamera.cameraZoomKey != null && Input.GetKeyDown((KeyCode)UI.FeatureCamera.cameraZoomKey))
+            if (UIInst.FeatureCamera.cameraZoomKeyEntry.Value != null &&
+                Input.GetKeyDown((KeyCode)UIInst.FeatureCamera.cameraZoomKeyEntry.Value))
                 CameraZoomInst.zoomOut();
 
-            if (preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value != null &&
-                Input.GetKeyDown((KeyCode)preferencesManager.gemRadiusVisualizerToggleKeyEntry.Value)) 
+            if (UIInst.FeatureGemVisualizer.gemRadiusVisualizerToggleKeyEntry.Value != null &&
+                Input.GetKeyDown((KeyCode)UIInst.FeatureGemVisualizer.gemRadiusVisualizerToggleKeyEntry.Value))
                 GemRadiusVisualizerInst.toggle();
 
-            if (UI.toggleUIKey != null && UI.initialized && !UI.Main.toggleUITimer.Enabled &&
-                Input.GetKeyDown((KeyCode)UI.toggleUIKey))
-                // MelonLogger.Msg("Toggle UI");
-                UI.UIBase.Enabled = !UI.UIBase.Enabled;
+            if (UIInst.Main.toggleUIKeyEntry.Value != null && UIInst.initialized && !UIInst.keyReassignTimer.Enabled &&
+                Input.GetKeyDown((KeyCode)UIInst.Main.toggleUIKeyEntry.Value))
+            {
+                UIInst.UIBase.Enabled = !UIInst.UIBase.Enabled;
+                if (UIInst.UIBase.Enabled) Game.Pause();
+                else Game.Resume();
+            }
+            // MelonLogger.Msg("Toggle UI");
         }
 
         public override void OnApplicationQuit()

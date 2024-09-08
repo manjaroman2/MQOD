@@ -1,5 +1,4 @@
 using System;
-using System.Timers;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,16 +11,22 @@ namespace MQOD
 {
     public abstract class PanelBaseMQOD : PanelBase
     {
+        protected readonly PreferencesManager prefManager;
         protected int fontSize;
         protected int rowCount;
 
-        protected PanelBaseMQOD(UIBase owner) : base(owner)
+        protected PanelBaseMQOD(UIBaseMQOD owner) : base(owner)
         {
+            prefManager = owner.prefManager;
         }
 
         protected override void ConstructPanelContent()
         {
-            fontSize = MQOD.Instance.UI.fontSize;
+        }
+
+        protected override void LateConstructUI()
+        {
+            fontSize = MQOD.Instance.UIInst.fontSize;
             Text TitleBarText = ContentRoot.GetComponentInChildren<Text>();
             if (TitleBarText != null)
             {
@@ -33,6 +38,7 @@ namespace MQOD
                 childControlHeight: true, forceWidth: false, forceHeight: false,
                 childAlignment: TextAnchor.UpperCenter,
                 spacing: 5, padLeft: 20, padRight: 20, padTop: 0, padBottom: 20);
+            base.LateConstructUI();
         }
 
         protected GameObject CreateRow()
@@ -42,57 +48,66 @@ namespace MQOD
                 bgColor: new Color(1f, 1f, 1f, 0.0f));
         }
 
-        protected void createHotkey(string hotkeyLabel,
+        protected void createHotkey(string label,
             Func<KeyCode?> keyCodeGetter,
-            Action<KeyCode?> keyCodeSetter, out Text text, Timer keyTimout = null)
+            Action<KeyCode?> keyCodeSetter, out Text text)
         {
-            text = createHotkey(hotkeyLabel, keyCodeGetter, keyCodeSetter, keyTimout);
+            text = createHotkey(label, keyCodeGetter, keyCodeSetter);
         }
 
-        protected Text createHotkey(string hotkeyLabel,
+
+        protected void createHotkey(string label, MelonPreferences_Entry<KeyCode?> preferencesEntry, out Text text)
+        {
+            text = createHotkey(label, preferencesEntry);
+        }
+
+        protected Text createHotkey(string label,
             Func<KeyCode?> keyCodeGetter,
-            Action<KeyCode?> keyCodeSetter, Timer keyTimout = null)
+            Action<KeyCode?> keyCodeSetter)
         {
             GameObject row = CreateRow();
-            Text HotkeyLabel = UIFactory.CreateLabel(row, hotkeyLabel, hotkeyLabel);
+            Text HotkeyLabel = UIFactory.CreateLabel(row, label, label);
             HotkeyLabel.fontSize = fontSize;
             // HotkeyLabel.color = Color.green;
             UIFactory.SetLayoutElement(HotkeyLabel.gameObject, 25, 25, 1);
-            ButtonRef Hotkey = UIFactory.CreateButton(row, $"{hotkeyLabel}Hotkey", keyCodeGetter().ToString());
+            ButtonRef Hotkey = UIFactory.CreateButton(row, $"{label}Hotkey",
+                keyCodeGetter() == null ? "unassigned" : keyCodeGetter().ToString());
             Hotkey.Component.GetComponentInChildren<Text>().fontSize = fontSize;
             Hotkey.Component.navigation = new Navigation
             {
                 mode = Navigation.Mode.None
             };
-            UIFactory.SetLayoutElement(Hotkey.GameObject, 100, 25, 0);
+            UIFactory.SetLayoutElement(Hotkey.GameObject, 125, 25, 0);
             Hotkey.OnClick += () =>
             {
+                if (MQOD.Instance.UIInst.isAssigning) return;
+                MQOD.Instance.UIInst.isAssigning = true;
                 InputManager.BeginRebind(OnSelection, OnFinished);
-                keyCodeSetter(null);
                 Hotkey.ButtonText.text = "<Press any key>";
             };
             return HotkeyLabel;
 
             void OnSelection(KeyCode pressed)
             {
-                if (keyTimout != null)
-                {
-                    keyTimout.AutoReset = false;
-                    keyTimout.Enabled = true;
-                }
-
+                MQOD.Instance.UIInst.keyReassignTimer.Enabled = true;
                 InputManager.EndRebind();
             }
 
             void OnFinished(KeyCode? bound)
             {
                 keyCodeSetter(bound);
-                Hotkey.ButtonText.text = keyCodeGetter().ToString();
+                Hotkey.ButtonText.text = keyCodeGetter() == null ? "unassigned" : keyCodeGetter().ToString();
+                MQOD.Instance.UIInst.isAssigning = false;
             }
         }
 
+        protected Text createHotkey(string label, MelonPreferences_Entry<KeyCode?> preferencesEntry)
+        {
+            return createHotkey(label, () => preferencesEntry.Value, code => preferencesEntry.Value = code);
+        }
+
         protected void createHotkeyToggle(Func<KeyCode?> keyCodeGetter,
-            Action<KeyCode?> keyCodeSetter, out Action<Color> setColor, Timer keyTimout = null)
+            Action<KeyCode?> keyCodeSetter, out Action<Color> setColor)
         {
             GameObject row = CreateRow();
             setColor = color => { row.GetComponent<Image>().color = color; };
@@ -100,36 +115,34 @@ namespace MQOD
             HotkeyLabel.fontSize = fontSize;
             // HotkeyLabel.color = Color.green;
             UIFactory.SetLayoutElement(HotkeyLabel.gameObject, 25, 25, 1);
-            ButtonRef Hotkey = UIFactory.CreateButton(row, "ToggleHotkey", keyCodeGetter().ToString());
+            ButtonRef Hotkey = UIFactory.CreateButton(row, "ToggleHotkey",
+                keyCodeGetter() == null ? "unassigned" : keyCodeGetter().ToString());
             Hotkey.Component.GetComponentInChildren<Text>().fontSize = fontSize;
             Hotkey.Component.navigation = new Navigation
             {
                 mode = Navigation.Mode.None
             };
-            UIFactory.SetLayoutElement(Hotkey.GameObject, 100, 25, 0);
+            UIFactory.SetLayoutElement(Hotkey.GameObject, 125, 25, 0);
             Hotkey.OnClick += () =>
             {
+                if (MQOD.Instance.UIInst.isAssigning) return;
+                MQOD.Instance.UIInst.isAssigning = true;
                 InputManager.BeginRebind(OnSelection, OnFinished);
-                keyCodeSetter(null);
                 Hotkey.ButtonText.text = "<Press any key>";
             };
             return;
 
             void OnSelection(KeyCode pressed)
             {
-                if (keyTimout != null)
-                {
-                    keyTimout.AutoReset = false;
-                    keyTimout.Enabled = true;
-                }
-
+                MQOD.Instance.UIInst.keyReassignTimer.Enabled = true;
                 InputManager.EndRebind();
             }
 
             void OnFinished(KeyCode? bound)
             {
                 keyCodeSetter(bound);
-                Hotkey.ButtonText.text = keyCodeGetter().ToString();
+                Hotkey.ButtonText.text = keyCodeGetter() == null ? "unassigned" : keyCodeGetter().ToString();
+                MQOD.Instance.UIInst.isAssigning = false;
             }
         }
 
@@ -170,9 +183,9 @@ namespace MQOD
                 {
                     panelExpandedEntry.Value = !panelExpandedEntry.Value;
                     panel.Enabled = panelExpandedEntry.Value;
-                    Vector3 vec3 = MQOD.Instance.UI.Main.Rect.localPosition;
+                    Vector3 vec3 = MQOD.Instance.UIInst.Main.Rect.localPosition;
                     panel.Rect.localPosition =
-                        new Vector3(vec3.x + MQOD.Instance.UI.Main.Rect.sizeDelta.x, vec3.y, vec3.z);
+                        new Vector3(vec3.x + MQOD.Instance.UIInst.Main.Rect.sizeDelta.x, vec3.y, vec3.z);
                 },
                 () => panelExpandedEntry.Value ? "Expanded" : "Hidden");
         }

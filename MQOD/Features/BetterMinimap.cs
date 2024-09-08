@@ -123,7 +123,7 @@ namespace MQOD
             config.MapDimensionUnits *= scalar;
             boundsImage_color = boundsImage.color;
             boundsImage.color = new Color(boundsImage_color.r, boundsImage_color.g, boundsImage_color.b,
-                MQOD.Instance.UI.FeatureMinimap.minimapTransparency);
+                MQOD.Instance.UIInst.FeatureMinimap.minimapTransparencyEntry.Value);
             // if (outline == null)
             // {
             //     outline = boundsImage.gameObject.AddComponent<Outline>();

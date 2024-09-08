@@ -1,12 +1,23 @@
+using MelonLoader;
 using UnityEngine;
-using UniverseLib.UI;
 
 namespace MQOD
 {
     public class PanelFeatureMinimap : PanelBaseMQOD
     {
-        public PanelFeatureMinimap(UIBase owner) : base(owner)
+        public readonly MelonPreferences_Entry<KeyCode?> minimapFullscreenKeyEntry;
+        public readonly MelonPreferences_Entry<float> minimapTransparencyEntry;
+        public readonly MelonPreferences_Entry<bool> minimapZoomFunctionEntry;
+        public readonly MelonPreferences_Entry<KeyCode?> minimapZoomInKeyEntry;
+        public readonly MelonPreferences_Entry<KeyCode?> minimapZoomOutKeyEntry;
+
+        public PanelFeatureMinimap(UIBaseMQOD owner) : base(owner)
         {
+            minimapFullscreenKeyEntry = prefManager.addHotkeyEntry("minimapFullscreenEntry");
+            minimapZoomOutKeyEntry = prefManager.addHotkeyEntry("minimapZoomOutEntry");
+            minimapZoomInKeyEntry = prefManager.addHotkeyEntry("minimapZoomInEntry");
+            minimapZoomFunctionEntry = prefManager.addSettingsEntry("minimapZoomFunctionEntry", false);
+            minimapTransparencyEntry = prefManager.addSettingsEntry("minimapTransparencyEntry", 0.3f);
         }
 
         public override string Name => "MQOD - Minimap";
@@ -16,60 +27,26 @@ namespace MQOD
         public override Vector2 DefaultAnchorMax => new(0.10f, 0.90f);
         public override bool CanDragAndResize => true;
 
-        public KeyCode? minimapFullscreenKey
+        protected override void LateConstructUI()
         {
-            get => MQOD.Instance.preferencesManager.minimapFullscreenKeyEntry.Value;
-            set => MQOD.Instance.preferencesManager.minimapFullscreenKeyEntry.Value = value;
-        }
-
-        public KeyCode? minimapZoomOutKey
-        {
-            get => MQOD.Instance.preferencesManager.minimapZoomOutKeyEntry.Value;
-            set => MQOD.Instance.preferencesManager.minimapZoomOutKeyEntry.Value = value;
-        }
-
-        public KeyCode? minimapZoomInKey
-        {
-            get => MQOD.Instance.preferencesManager.minimapZoomInKeyEntry.Value;
-            set => MQOD.Instance.preferencesManager.minimapZoomInKeyEntry.Value = value;
-        }
-
-        public bool MinimapZoomFunction
-        {
-            get => MQOD.Instance.preferencesManager.minimapZoomFunctionEntry.Value;
-            set => MQOD.Instance.preferencesManager.minimapZoomFunctionEntry.Value = value;
-        }
-
-        public float minimapTransparency
-        {
-            get => MQOD.Instance.preferencesManager.minimapTransparencyEntry.Value;
-            set => MQOD.Instance.preferencesManager.minimapTransparencyEntry.Value = value;
-        }
-
-        protected override void ConstructPanelContent()
-        {
-            base.ConstructPanelContent();
-
-            createHotkey("Fullscreen", () => minimapFullscreenKey,
-                code => minimapFullscreenKey = code);
-            createHotkey("Zoom Out", () => minimapZoomOutKey,
-                code => minimapZoomOutKey = code);
-            createHotkey("Zoom In", () => minimapZoomInKey,
-                code => minimapZoomInKey = code);
+            createHotkey("Fullscreen", minimapFullscreenKeyEntry);
+            createHotkey("Zoom Out", minimapZoomOutKeyEntry);
+            createHotkey("Zoom In", minimapZoomInKeyEntry);
             createSwitch("Fullscreen Mode", Color.gray, Color.gray,
-                () => MinimapZoomFunction,
-                () => MinimapZoomFunction = !MinimapZoomFunction,
-                () => MinimapZoomFunction ? "Toggle" : "Hold");
+                () => minimapZoomFunctionEntry.Value,
+                () => minimapZoomFunctionEntry.Value = !minimapZoomFunctionEntry.Value,
+                () => minimapZoomFunctionEntry.Value ? "Toggle" : "Hold");
             createSlider("Opacity", 0.01f, 1.00f, f =>
             {
-                minimapTransparency = f;
+                minimapTransparencyEntry.Value = f;
                 if (MQOD.Instance.BetterMinimapInst.initialized && MQOD.Instance.BetterMinimapInst.zoomedIn)
                 {
                     Color boundsImage_color = MQOD.Instance.BetterMinimapInst.boundsImage_color;
                     MQOD.Instance.BetterMinimapInst.boundsImage.color = new Color(boundsImage_color.r,
-                        boundsImage_color.g, boundsImage_color.b, minimapTransparency);
+                        boundsImage_color.g, boundsImage_color.b, minimapTransparencyEntry.Value);
                 }
-            }, () => minimapTransparency);
+            }, () => minimapTransparencyEntry.Value);
+            base.LateConstructUI();
         }
     }
 }

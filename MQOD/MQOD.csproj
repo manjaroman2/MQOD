@@ -65,12 +65,12 @@
         <Compile Include="UI\PanelFeatureSort.cs"/>
         <Compile Include="UI\ComponentDragController.cs"/>
         <Compile Include="UI\PanelBaseMQOD.cs"/>
-        <Compile Include="UI\UIMQOD.cs"/>
+        <Compile Include="UI\UI.cs"/>
+        <Compile Include="UI\UIBaseMQOD.cs"/>
         <Compile Include="Utils\AssetManager.cs"/>
         <Compile Include="Utils\FeatureManager.cs"/>
         <Compile Include="Utils\HarmonyHelper.cs"/>
         <Compile Include="Utils\PreferencesManager.cs"/>
-        <Compile Include="Utils\UniverseLibHooks.cs"/>
     </ItemGroup>
     <ItemGroup>
         <Reference Include="0Harmony">

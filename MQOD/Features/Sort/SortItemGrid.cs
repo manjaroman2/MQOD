@@ -44,7 +44,7 @@ namespace MQOD
 
         private static void ItemGrid__Populate__Postfix(IEnumerable<Item> items, ref ItemGrid __instance)
         {
-            MQOD.Instance.UI.FeatureSort.SortOrdering.sortItemGrid(__instance); 
+            MQOD.Instance.UIInst.FeatureSort.customSortOrderingEntry.Value.sortItemGrid(__instance);
             // MelonLogger.Msg(MQOD.Instance.UI.FeatureSort.SortOrdering.sortItemGrid(__instance)
             //     ? "Sorted item grid"
             //     : "Nothing to sort :)");
