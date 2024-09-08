@@ -30,6 +30,7 @@ namespace MQOD
         public override Vector2 DefaultAnchorMax => new(0.10f, 0.90f);
         public override bool CanDragAndResize => true;
 
+
         protected override void LateConstructUI()
         {
             createHotkey("Sorting", sortingKeyEntry);

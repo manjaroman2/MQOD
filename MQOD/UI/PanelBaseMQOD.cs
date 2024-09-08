@@ -13,11 +13,20 @@ namespace MQOD
     {
         protected readonly PreferencesManager prefManager;
         protected int fontSize;
+
+        public Action onCloseAction;
         protected int rowCount;
 
         protected PanelBaseMQOD(UIBaseMQOD owner) : base(owner)
         {
             prefManager = owner.prefManager;
+        }
+
+        protected override void OnClosePanelClicked()
+        {
+            base.OnClosePanelClicked();
+
+            onCloseAction?.Invoke();
         }
 
         protected override void ConstructPanelContent()
@@ -171,23 +180,44 @@ namespace MQOD
 
         protected void createPanelSwitch<T>(string switchLabel, T panel, Color? colorState1 = null,
             Color? colorState2 = null)
-            where T : PanelBase
+            where T : PanelBaseMQOD
         {
             colorState1 ??= Color.yellow;
             colorState2 ??= Color.gray;
             MelonPreferences_Entry<bool> panelExpandedEntry =
                 MQOD.Instance.preferencesManager.addSettingsEntry(string.Join("", switchLabel.Split(' ')) + "Entry",
                     false);
-            createSwitch(switchLabel, (Color)colorState1, (Color)colorState2, () => panelExpandedEntry.Value,
-                () =>
-                {
-                    panelExpandedEntry.Value = !panelExpandedEntry.Value;
-                    panel.Enabled = panelExpandedEntry.Value;
-                    Vector3 vec3 = MQOD.Instance.UIInst.Main.Rect.localPosition;
-                    panel.Rect.localPosition =
-                        new Vector3(vec3.x + MQOD.Instance.UIInst.Main.Rect.sizeDelta.x, vec3.y, vec3.z);
-                },
-                () => panelExpandedEntry.Value ? "Expanded" : "Hidden");
+
+            GameObject row = CreateRow();
+            Text SwitchLabel = UIFactory.CreateLabel(row, switchLabel, switchLabel);
+            SwitchLabel.fontSize = fontSize;
+            SwitchLabel.color = (Color)(panelExpandedEntry.Value ? colorState1 : colorState2);
+            UIFactory.SetLayoutElement(SwitchLabel.gameObject, 25, 25, 1);
+            ButtonRef Switch = UIFactory.CreateButton(row, $"{switchLabel}PanelSwitch",
+                panelExpandedEntry.Value ? "Expanded" : "Hidden");
+            UIFactory.SetLayoutElement(Switch.GameObject, 100, 25, 0);
+            Switch.Component.GetComponentInChildren<Text>().fontSize = fontSize;
+            Switch.Component.navigation = new Navigation
+            {
+                mode = Navigation.Mode.None
+            };
+
+            panelExpandedEntry.OnEntryValueChanged.Subscribe((oldState, newState) => { applyState(); });
+            Switch.OnClick += () => { panelExpandedEntry.Value = !panelExpandedEntry.Value; };
+
+            panel.onCloseAction = () => { panelExpandedEntry.Value = false; };
+            applyState();
+            return;
+
+            void applyState()
+            {
+                panel.Enabled = panelExpandedEntry.Value;
+                Vector3 vec3 = MQOD.Instance.UIInst.Main.Rect.localPosition;
+                panel.Rect.localPosition =
+                    new Vector3(vec3.x + MQOD.Instance.UIInst.Main.Rect.sizeDelta.x, vec3.y, vec3.z);
+                Switch.ButtonText.text = panelExpandedEntry.Value ? "Expanded" : "Hidden";
+                SwitchLabel.color = (Color)(panelExpandedEntry.Value ? colorState1 : colorState2);
+            }
         }
 
         protected void createSlider(string label, float minValue, float maxValue,
