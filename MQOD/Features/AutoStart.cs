@@ -1,4 +1,3 @@
-using System;
 using System.Reflection;
 using Death.App.MainMenu;
 using HarmonyLib;

@@ -55,9 +55,9 @@ namespace MQOD
             BetterMinimapInst = featureManager.addFeature<BetterMinimap>();
             GemRadiusVisualizerInst = featureManager.addFeature<GemRadiusVisualizer>();
             CameraZoomInst = featureManager.addFeature<CameraZoom>();
-            #if DEBUG 
+#if DEBUG
             featureManager.addFeature<AutoStart>();
-            #endif
+#endif
             featureManager.addHarmonyHooks();
 
 
@@ -93,7 +93,7 @@ namespace MQOD
             if (!UIInst.initialized) return;
             if (UIInst.keyReassignTimer.Enabled) return; // Handle keycodes
 
-            
+
             // if (Input.GetKeyDown(KeyCode.L)) Player.Instance.Entity.Invulnerable.AddStack();
             // if (Input.GetKeyDown(KeyCode.L))
             // {

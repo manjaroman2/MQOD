@@ -29,10 +29,15 @@ namespace MQOD
                 if (value is not TomlArray tomlArray)
                     throw new TomlTypeMismatchException(typeof(TomlArray), value.GetType(), typeof(Sort.Ordering));
 
+                if (tomlArray.Count > (int)Sort.Category.NULL)
+                {
+                    MelonLogger.Warning("Sort Ordering parsing failed! Resorting to default.");
+                    return Sort.Ordering.DEFAULT;
+                }
+
                 Sort.Ordering ordering = new(tomlArray.Count);
                 ordering.AddRange(tomlArray.Select(tomlValue =>
                     (Sort.Category)Enum.Parse(typeof(Sort.Category), tomlValue.StringValue)));
-
                 return ordering;
             });
         }

@@ -17,10 +17,7 @@ namespace MQOD
         {
             sortingKeyEntry = prefManager.addHotkeyEntry("sortingKey");
             toggleAutoSortingKeyEntry = prefManager.addHotkeyEntry("toggleAutoSortingKey");
-            customSortOrderingEntry = prefManager.addSettingsEntry("customSortOrderingEntry", new Sort.Ordering
-            {
-                Sort.Category.UNIQUENESS, Sort.Category.RARITY, Sort.Category.TIER, Sort.Category.TYPE
-            });
+            customSortOrderingEntry = prefManager.addSettingsEntry("customSortOrderingEntry", Sort.Ordering.DEFAULT);
         }
 
         public override string Name => "MQOD - Custom Sort Settings";
@@ -40,6 +37,7 @@ namespace MQOD
             Dictionary<Text, Sort.Category> CategoryIndex = new();
 
             Sort.Ordering SortOrdering = customSortOrderingEntry.Value;
+            MelonLogger.Msg(SortOrdering);
             foreach (Sort.Category category in SortOrdering)
             {
                 Text text = UIFactory.CreateLabel(ContentRoot, category.GetString(), category.GetString(),

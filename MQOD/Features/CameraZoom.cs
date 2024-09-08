@@ -5,9 +5,9 @@ namespace MQOD
     public class CameraZoom : _Feature
     {
         private const int maxZoomState = 4;
+        private const float zoomScalar = 0.8f;
         private float defaultZoom;
         private int zoomState = 1;
-        private const float zoomScalar = 0.8f; 
 
         protected override void addHarmonyHooks()
         {

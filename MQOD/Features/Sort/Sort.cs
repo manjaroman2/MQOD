@@ -121,6 +121,8 @@ namespace MQOD
 
         public class Ordering : List<Category>
         {
+            public static readonly Ordering DEFAULT = _DEFAULT;
+
             public Ordering()
             {
             }
@@ -130,9 +132,12 @@ namespace MQOD
                 for (int i = 0; i < n; i++) Add(Category.NULL);
             }
 
-            public List<string> ToStrings()
+            private static Ordering _DEFAULT => new()
+                { Category.UNIQUENESS, Category.RARITY, Category.TIER, Category.TYPE };
+
+            public override string ToString()
             {
-                return this.Select(category => category.GetString()).ToList();
+                return string.Join(">", this.Select(category => category.GetString()));
             }
 
 

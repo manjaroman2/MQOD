@@ -16,6 +16,17 @@ namespace MQOD
 {
     public class BetterMinimap : _Feature
     {
+        private const int MaxZoomState = 5;
+
+
+        private static readonly FieldInfo chunkViewRangeAccessor =
+            AccessTools.Field(typeof(WorldGenConfig), "_chunkViewRange");
+
+        private static readonly FieldInfo chunkCleanupRangeAccessor =
+            AccessTools.Field(typeof(WorldGenConfig), "_chunkCleanupRange");
+
+        private readonly FieldInfo boundsImageAccessor = AccessTools.Field(typeof(GUI_Minimap), "_boundsImage");
+        private readonly FieldInfo boundsWidthAccessor = AccessTools.Field(typeof(GUI_Minimap), "_boundsWidth");
         public Image boundsImage;
         public Color boundsImage_color;
         private RectTransform boundsImageRectTransform;
@@ -23,21 +34,21 @@ namespace MQOD
         private Vector2 boundsImageRectTransform_sizeDelta;
         private float boundsWidthAccessor_GetValue;
         private GUI_Minimap.Config config;
+        public CoordUtils Coords;
         private float default_config_MapDimensionUnits;
-        private float mapDimensionUnitsState;
         private GUI_Minimap guiMinimap;
         private GameObject Img_Frame;
+        public bool IsFullscreen;
+        private float mapDimensionUnitsState;
         private RectTransform rectTransform;
         private Vector2 rectTransform_anchorMax;
 
         private Vector2 rectTransform_anchorMin;
         private Vector2 rectTransform_pivot;
-        public bool IsFullscreen;
         private int ZoomState;
-        private const int MaxZoomState = 5;
 
-        private readonly FieldInfo boundsImageAccessor = AccessTools.Field(typeof(GUI_Minimap), "_boundsImage");
-        private readonly FieldInfo boundsWidthAccessor = AccessTools.Field(typeof(GUI_Minimap), "_boundsWidth");
+        public Action<int> setChunkViewRange { get; private set; }
+        public Func<int> getChunkViewRange { get; private set; }
 
         public void init()
         {
@@ -164,17 +175,17 @@ namespace MQOD
         protected override void addHarmonyHooks()
         {
             HarmonyHelper.Patch(typeof(WorldGenerator), nameof(WorldGenerator.InitAsync),
-                new[] { typeof(WorldGenRecipe), typeof(Bounds2D) }, prefixClazz: typeof(BetterMinimap),
-                prefixMethod: nameof(Postfix__WorldGenerator__InitAsync));
+                new[] { typeof(WorldGenRecipe), typeof(Bounds2D) }, typeof(BetterMinimap),
+                nameof(Postfix__WorldGenerator__InitAsync));
             HarmonyHelper.Patch(typeof(WorldGenerator), "RemoveChunk",
-                new[] { typeof(Vector2Int) }, prefixClazz: typeof(BetterMinimap),
-                prefixMethod: nameof(Postfix__WorldGenerator__RemoveChunk));
+                new[] { typeof(Vector2Int) }, typeof(BetterMinimap),
+                nameof(Postfix__WorldGenerator__RemoveChunk));
             HarmonyHelper.Patch(typeof(WorldGenerator), "GenerateChunkAsync",
-                new[] { typeof(Vector2Int), typeof(CancellationToken) }, prefixClazz: typeof(BetterMinimap),
-                prefixMethod: nameof(Postfix__WorldGenerator__GenerateChunkAsync));
+                new[] { typeof(Vector2Int), typeof(CancellationToken) }, typeof(BetterMinimap),
+                nameof(Postfix__WorldGenerator__GenerateChunkAsync));
             HarmonyHelper.Patch(typeof(WorldGenerator), "UpdateVisibleChunksAsync",
-                new[] { typeof(Bounds2D), typeof(CancellationToken) }, prefixClazz: typeof(BetterMinimap),
-                prefixMethod: nameof(Postfix__WorldGenerator__UpdateVisibleChunksAsync));
+                new[] { typeof(Bounds2D), typeof(CancellationToken) }, typeof(BetterMinimap),
+                nameof(Postfix__WorldGenerator__UpdateVisibleChunksAsync));
         }
 
         private static void Postfix__WorldGenerator__UpdateVisibleChunksAsync(
@@ -196,17 +207,6 @@ namespace MQOD
         {
             // MelonLogger.Msg($"Generating chunk at {coords}");
         }
-
-
-        private static readonly FieldInfo chunkViewRangeAccessor =
-            AccessTools.Field(typeof(WorldGenConfig), "_chunkViewRange");
-
-        private static readonly FieldInfo chunkCleanupRangeAccessor =
-            AccessTools.Field(typeof(WorldGenConfig), "_chunkCleanupRange");
-
-        public Action<int> setChunkViewRange { get; private set; }
-        public Func<int> getChunkViewRange { get; private set; }
-        public CoordUtils Coords;
 
         private static void Postfix__WorldGenerator__InitAsync(WorldGenerator __instance, WorldGenConfig ____config,
             WorldGenRecipe recipe, Bounds2D cameraWorldBounds)
