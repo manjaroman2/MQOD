@@ -55,7 +55,7 @@ else
             targetzip="${name}.zip"
 	    cd "${gamedir}"
             rm "${targetzip}" 2> /dev/null
-            zip -r "${targetzip}" "Mods/${name}.dll" "UserLibs/${deps}" "Mods/${name}"
+            zip -9 -r "${targetzip}" "Mods/${name}.dll" "UserLibs/${deps}" "Mods/${name}"
             exit 0
         else
             echo "$1"
