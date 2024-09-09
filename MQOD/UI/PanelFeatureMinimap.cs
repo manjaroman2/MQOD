@@ -5,6 +5,14 @@ namespace MQOD
 {
     public class PanelFeatureMinimap : PanelBaseMQOD
     {
+        
+        public char this[int index]
+        {
+            get
+            {
+                return 'c';
+            }
+        }
         public readonly MelonPreferences_Entry<KeyCode?> minimapFullscreenKeyEntry;
         public readonly MelonPreferences_Entry<float> minimapTransparencyEntry;
         public readonly MelonPreferences_Entry<bool> minimapZoomFunctionEntry;
