@@ -1,4 +1,6 @@
+using System;
 using Death.App;
+using Death.Items;
 using Death.Run.UserInterface.Items;
 using MelonLoader;
 
@@ -24,6 +26,17 @@ namespace MQOD
                 return;
             }
 
+            // Sort.OneParameter<ulong, Item> getRankIL = Sort.GenerateILGetRankIL();
+            foreach (Item item in MQOD.Instance.SortShopInst
+                         .ShopItemController
+                         .GetSelectedPageGrid().GetItems())
+            {
+                // ulong rankIL = getRankIL(item);
+                ulong rank = Sort.getRank(item); 
+                MelonLogger.Msg($"rankIL=  rank={rank}");
+            }
+
+            
             MelonLogger.Msg(
                 MQOD.Instance.UIInst.FeatureSort.customSortOrderingEntry.Value.sortItemGrid(MQOD.Instance.SortShopInst
                     .ShopItemController

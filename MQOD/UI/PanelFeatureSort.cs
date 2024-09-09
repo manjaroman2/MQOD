@@ -37,7 +37,6 @@ namespace MQOD
             Dictionary<Text, Sort.Category> CategoryIndex = new();
 
             Sort.Ordering SortOrdering = customSortOrderingEntry.Value;
-            MelonLogger.Msg(SortOrdering);
             foreach (Sort.Category category in SortOrdering)
             {
                 Text text = UIFactory.CreateLabel(ContentRoot, category.GetString(), category.GetString(),

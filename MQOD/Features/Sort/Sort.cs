@@ -3,13 +3,34 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
+using System.Threading;
 using Death.Items;
 using HarmonyLib;
+using MelonLoader;
 
 namespace MQOD
 {
     public static class Sort
     {
+        public static readonly MethodInfo Item__GetUnique =
+            typeof(Item).GetProperty(nameof(Item.IsUnique))!.GetGetMethod();
+
+        public static readonly MethodInfo Item__GetRarity =
+            typeof(Item).GetProperty(nameof(Item.Rarity))!.GetGetMethod();
+
+        public static readonly MethodInfo Item__GetTier = typeof(Item).GetProperty(nameof(Item.Tier))!.GetGetMethod();
+        public static readonly MethodInfo TierId__GetId = typeof(TierId).GetProperty(nameof(TierId.Id))!.GetGetMethod();
+        public static readonly MethodInfo Item__GetType = typeof(Item).GetProperty(nameof(Item.Type))!.GetGetMethod();
+
+        public static readonly MethodInfo Item__GetSubtypeCode =
+            typeof(Item).GetProperty(nameof(Item.SubtypeCode))!.GetGetMethod();
+
+        public static readonly MethodInfo String__GetChars =
+            typeof(string).GetProperty("Chars", new[] { typeof(int) })!.GetGetMethod();
+
+        public static readonly MethodInfo String__GetLength =
+            typeof(string).GetProperty(nameof(string.Length))!.GetGetMethod();
+
         public enum Category
         {
             UNIQUENESS,
@@ -21,236 +42,235 @@ namespace MQOD
 
         private static readonly FieldInfo ItemGridSlotsAccessor = typeof(ItemGrid).GetField("_slots", AccessTools.all);
 
-        private static DynamicMethod getRankIL(Item item)
+        public delegate TReturn OneParameter<out TReturn, in TParameter0>(TParameter0 p0);
+
+        private static void doILStuff(ILGenerator il)
         {
-            DynamicMethod dynamicMethod = new("getRank", typeof(long), new[] { typeof(Item) });
+            List<Label> labels = new();
 
-            ILGenerator ilGenerator = dynamicMethod.GetILGenerator();
+            il.DeclareLocal(typeof(ulong));
+            il.DeclareLocal(typeof(ulong));
+            il.DeclareLocal(typeof(uint));
+            il.DeclareLocal(typeof(TierId));
+            il.DeclareLocal(typeof(string));
+            il.DeclareLocal(typeof(int));
+            il.DeclareLocal(typeof(int));
+            il.DeclareLocal(typeof(int));
+            for (int i = 0; i < 8; i++)
+            {
+                labels.Add(il.DefineLabel());
+            }
 
-            Label[] labels = new Label[11];
-            // ulong num = 0uL;
-            ilGenerator.Emit(OpCodes.Ldc_I4_0);
-            ilGenerator.Emit(OpCodes.Conv_I8);
-            ilGenerator.Emit(OpCodes.Stloc_0);
-            // if (item == null)
-            ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.Emit(OpCodes.Brtrue_S, labels[0]);
-            // return num;
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ret);
-            // ulong num2 = 9223372036854775808uL;
-            ilGenerator.MarkLabel(labels[0]);
-            ilGenerator.Emit(OpCodes.Ldc_I8, -9223372036854775808);
-            ilGenerator.Emit(OpCodes.Stloc_1);
-            // int num3 = 64;
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 64);
-            ilGenerator.Emit(OpCodes.Stloc_2);
-            ilGenerator.Emit(OpCodes.Ldarg_0);
-            // if (item.IsUnique)
-            ilGenerator.EmitCall(OpCodes.Callvirt, typeof(Item).GetProperty(nameof(Item.IsUnique))!.GetGetMethod(),
-                new Type[] { });
-            ilGenerator.Emit(OpCodes.Brfalse_S, labels[1]);
-            // num |= num2;
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Or);
-            ilGenerator.Emit(OpCodes.Stloc_0);
-            // num2 >>= 1;
-            ilGenerator.MarkLabel(labels[1]);
-            ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Ldc_I4_1);
-            ilGenerator.Emit(OpCodes.Shr_Un);
-            ilGenerator.Emit(OpCodes.Stloc_1);
-            // num3--;
-            ilGenerator.Emit(OpCodes.Ldloc_2);
-            ilGenerator.Emit(OpCodes.Ldc_I4_1);
-            ilGenerator.Emit(OpCodes.Sub);
-            ilGenerator.Emit(OpCodes.Stloc_2);
-            // num |= num2 >> (int)(6 - item.Rarity);
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Ldc_I4_6);
-            ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.EmitCall(OpCodes.Callvirt, typeof(Item).GetProperty(nameof(Item.Rarity))!.GetGetMethod(),
-                new Type[] { });
-            ilGenerator.Emit(OpCodes.Sub);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 63);
-            ilGenerator.Emit(OpCodes.And);
-            ilGenerator.Emit(OpCodes.Shr_Un);
-            ilGenerator.Emit(OpCodes.Or);
-            ilGenerator.Emit(OpCodes.Stloc_0);
-            // num2 >>= 6;
-            ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Ldc_I4_6);
-            ilGenerator.Emit(OpCodes.Shr_Un);
-            ilGenerator.Emit(OpCodes.Stloc_1);
-            // num3 -= 6;
-            ilGenerator.Emit(OpCodes.Ldloc_2);
-            ilGenerator.Emit(OpCodes.Ldc_I4_6);
-            ilGenerator.Emit(OpCodes.Sub);
-            ilGenerator.Emit(OpCodes.Stloc_2);
-            // num |= num2 >> 5 - item.Tier.Id;
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Ldc_I4_5);
-            ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.EmitCall(OpCodes.Callvirt, typeof(Item).GetProperty(nameof(Item.Tier))!.GetGetMethod(),
-                new Type[] { });
-            ilGenerator.Emit(OpCodes.Stloc_3);
-            ilGenerator.Emit(OpCodes.Ldloca_S, 3);
-            ilGenerator.EmitCall(OpCodes.Callvirt, typeof(TierId).GetProperty(nameof(TierId.Id))!.GetGetMethod(),
-                new Type[] { });
-            ilGenerator.Emit(OpCodes.Sub);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 63);
-            ilGenerator.Emit(OpCodes.And);
-            ilGenerator.Emit(OpCodes.Shr_Un);
-            ilGenerator.Emit(OpCodes.Or);
-            ilGenerator.Emit(OpCodes.Stloc_0);
-            // num2 >>= 5;
-            ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Ldc_I4_5);
-            ilGenerator.Emit(OpCodes.Shr_Un);
-            ilGenerator.Emit(OpCodes.Stloc_1);
-            // num3 -= 5;
-            ilGenerator.Emit(OpCodes.Ldloc_2);
-            ilGenerator.Emit(OpCodes.Ldc_I4_5);
-            ilGenerator.Emit(OpCodes.Sub);
-            ilGenerator.Emit(OpCodes.Stloc_2);
-            // num |= num2 >> (int)item.Type;
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.EmitCall(OpCodes.Callvirt, typeof(Item).GetProperty(nameof(Item.Type))!.GetGetMethod(),
-                new Type[] { });
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 63);
-            ilGenerator.Emit(OpCodes.And);
-            ilGenerator.Emit(OpCodes.Shr_Un);
-            ilGenerator.Emit(OpCodes.Or);
-            // num2 >>= 11;
-            ilGenerator.Emit(OpCodes.Stloc_0);
-            ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 11);
-            ilGenerator.Emit(OpCodes.Shr_Un);
-            ilGenerator.Emit(OpCodes.Stloc_1);
-            // num3 -= 11;
-            ilGenerator.Emit(OpCodes.Ldloc_2);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 11);
-            ilGenerator.Emit(OpCodes.Sub);
-            ilGenerator.Emit(OpCodes.Stloc_2);
-            // num3 -= 26;
-            ilGenerator.Emit(OpCodes.Ldloc_2);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 26);
-            ilGenerator.Emit(OpCodes.Sub);
-            ilGenerator.Emit(OpCodes.Stloc_2);
-            // string subtypeCode = item.SubtypeCode;
-            ilGenerator.Emit(OpCodes.Ldarg_0);
-            ilGenerator.EmitCall(OpCodes.Callvirt, typeof(Item).GetProperty(nameof(Item.SubtypeCode))!.GetGetMethod(),
-                new Type[] { });
-            ilGenerator.Emit(OpCodes.Stloc_S, 4);
-            // (no C# code)
-            ilGenerator.Emit(OpCodes.Ldc_I4_0);
-            ilGenerator.Emit(OpCodes.Stloc_S, 5);
-            // 	foreach (int num4 in subtypeCode)
-            // 	{
-            // 		int num5 = num4;
-            // 		if (num5 < 65)
-            // 		{
-            // 			continue;
-            // 		}
-            // 		if (num4 > 65 + num3)
-            // 		{
-            // 			if (num5 > 96 && num5 < 123)
-            // 			{
-            // 				num ^= num2 >> num4 - 97 + num3;
-            // 			}
-            // 		}
-            // 		else
-            // 		{
-            // 			num ^= num2 >> num4 - 65;
-            // 		}
-            // 	}
-            ilGenerator.Emit(OpCodes.Br_S, labels[7]);
-            ilGenerator.MarkLabel(labels[2]);
-            ilGenerator.Emit(OpCodes.Ldloc_S, 4);
-            ilGenerator.Emit(OpCodes.Ldloc_S, 5);
-            ilGenerator.EmitCall(OpCodes.Callvirt,
-                typeof(string).GetProperty("Item", new[] { typeof(int) })!.GetGetMethod(),
-                new Type[] { });
-            ilGenerator.Emit(OpCodes.Stloc_S, 6);
-            // int num5 = num4;
-            ilGenerator.Emit(OpCodes.Ldloc_S, 6);
-            ilGenerator.Emit(OpCodes.Stloc_S, 7);
-            // if (num5 < 65)
-            ilGenerator.Emit(OpCodes.Ldloc_S, 7);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 65);
-            ilGenerator.Emit(OpCodes.Bge_S, labels[4]);
-            // if (num5 > 96 && num5 < 123)
-            ilGenerator.Emit(OpCodes.Br_S, labels[6]);
-            // loop start (head: IL_00b0)
-            ilGenerator.MarkLabel(labels[3]);
-            ilGenerator.Emit(OpCodes.Ldloc_S, 7);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 96);
-            ilGenerator.Emit(OpCodes.Ble_S, labels[6]);
-            ilGenerator.Emit(OpCodes.Ldloc_S, 7);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 123);
-            ilGenerator.Emit(OpCodes.Blt_S, labels[5]);
-            // if (num4 > 65 + num3)
-            ilGenerator.Emit(OpCodes.Br_S, labels[6]);
-            ilGenerator.MarkLabel(labels[4]);
-            ilGenerator.Emit(OpCodes.Ldloc_S, 6);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 65);
-            ilGenerator.Emit(OpCodes.Ldloc_2);
-            ilGenerator.Emit(OpCodes.Add);
-            ilGenerator.Emit(OpCodes.Bgt_S, labels[3]);
-            // end loop
-            // num ^= num2 >> num4 - 65;
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Ldloc_S, 6);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 65);
-            ilGenerator.Emit(OpCodes.Sub);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 63);
-            ilGenerator.Emit(OpCodes.And);
-            ilGenerator.Emit(OpCodes.Shr_Un);
-            ilGenerator.Emit(OpCodes.Xor);
-            ilGenerator.Emit(OpCodes.Stloc_0);
-            // num ^= num2 >> num4 - 97 + num3;
-            ilGenerator.Emit(OpCodes.Br_S, labels[6]);
-            ilGenerator.MarkLabel(labels[5]);
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ldloc_1);
-            ilGenerator.Emit(OpCodes.Ldloc_S, 6);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 97);
-            ilGenerator.Emit(OpCodes.Sub);
-            ilGenerator.Emit(OpCodes.Ldloc_2);
-            ilGenerator.Emit(OpCodes.Add);
-            ilGenerator.Emit(OpCodes.Ldc_I4_S, 63);
-            ilGenerator.Emit(OpCodes.And);
-            ilGenerator.Emit(OpCodes.Shr_Un);
-            ilGenerator.Emit(OpCodes.Xor);
-            ilGenerator.Emit(OpCodes.Stloc_0);
-            // (no C# code)
-            ilGenerator.MarkLabel(labels[6]);
-            ilGenerator.Emit(OpCodes.Ldloc_S, 5);
-            ilGenerator.Emit(OpCodes.Ldc_I4_1);
-            ilGenerator.Emit(OpCodes.Add);
-            ilGenerator.Emit(OpCodes.Stloc_S, 5);
-            // return num;
-            ilGenerator.MarkLabel(labels[7]);
-            ilGenerator.Emit(OpCodes.Ldloc_S, 5);
-            ilGenerator.Emit(OpCodes.Ldloc_S, 4);
-            ilGenerator.EmitCall(OpCodes.Callvirt,
-                typeof(string).GetProperty(nameof(string.Length))!.GetGetMethod(),
-                new Type[] { });
-            ilGenerator.Emit(OpCodes.Blt_S, labels[2]);
-            // end loop
-            ilGenerator.Emit(OpCodes.Ldloc_0);
-            ilGenerator.Emit(OpCodes.Ret);
-
-            return dynamicMethod;
+            il.EmitLog(OpCodes.Ldc_I4_0);
+            il.EmitLog(OpCodes.Conv_I8);
+            il.EmitLog(OpCodes.Stloc, 0);
+            il.EmitLog(OpCodes.Ldarg_0);
+            il.EmitLog(OpCodes.Brtrue_S, labels[0]);
+            il.EmitLog(OpCodes.Ldloc, 0);
+            il.EmitLog(OpCodes.Ret);
+            il.MarkLabel(labels[0]);
+            il.EmitLog(OpCodes.Ldc_I8, -9223372036854775808);
+            il.EmitLog(OpCodes.Stloc, 1);
+            il.EmitLog(OpCodes.Ldc_I4_S, 64);
+            il.EmitLog(OpCodes.Stloc, 2);
+            il.EmitLog(OpCodes.Ldarg_0);
+            il.EmitLogCall(OpCodes.Callvirt, Item__GetUnique, null);
+            il.EmitLog(OpCodes.Brfalse_S, labels[1]);
+            il.EmitLog(OpCodes.Ldloc, 0);
+            il.EmitLog(OpCodes.Ldloc, 1);
+            il.EmitLog(OpCodes.Or);
+            il.EmitLog(OpCodes.Stloc, 0);
+            il.MarkLabel(labels[1]);
+            il.EmitLog(OpCodes.Ldloc, 1);
+            il.EmitLog(OpCodes.Ldc_I4_1);
+            il.EmitLog(OpCodes.Shr_Un);
+            il.EmitLog(OpCodes.Stloc, 1);
+            il.EmitLog(OpCodes.Ldloc, 2);
+            il.EmitLog(OpCodes.Ldc_I4_1);
+            il.EmitLog(OpCodes.Sub);
+            il.EmitLog(OpCodes.Stloc, 2);
+            il.EmitLog(OpCodes.Ldloc, 0);
+            il.EmitLog(OpCodes.Ldloc, 1);
+            il.EmitLog(OpCodes.Ldc_I4_6);
+            il.EmitLog(OpCodes.Ldarg_0);
+            il.EmitLogCall(OpCodes.Callvirt, Item__GetRarity, null);
+            il.EmitLog(OpCodes.Sub);
+            il.EmitLog(OpCodes.Ldc_I4_S, 63);
+            il.EmitLog(OpCodes.And);
+            il.EmitLog(OpCodes.Shr_Un);
+            il.EmitLog(OpCodes.Or);
+            il.EmitLog(OpCodes.Stloc, 0);
+            il.EmitLog(OpCodes.Ldloc, 1);
+            il.EmitLog(OpCodes.Ldc_I4_6);
+            il.EmitLog(OpCodes.Shr_Un);
+            il.EmitLog(OpCodes.Stloc, 1);
+            il.EmitLog(OpCodes.Ldloc, 2);
+            il.EmitLog(OpCodes.Ldc_I4_6);
+            il.EmitLog(OpCodes.Sub);
+            il.EmitLog(OpCodes.Stloc, 2);
+            il.EmitLog(OpCodes.Ldloc, 0);
+            il.EmitLog(OpCodes.Ldloc, 1);
+            il.EmitLog(OpCodes.Ldc_I4_5);
+            il.EmitLog(OpCodes.Ldarg_0);
+            il.EmitLogCall(OpCodes.Callvirt, Item__GetTier, null);
+            il.EmitLog(OpCodes.Stloc, 3);
+            il.EmitLog(OpCodes.Ldloca_S, 3);
+            il.EmitLogCall(OpCodes.Callvirt, TierId__GetId, null);
+            il.EmitLog(OpCodes.Sub);
+            il.EmitLog(OpCodes.Ldc_I4_S, 63);
+            il.EmitLog(OpCodes.And);
+            il.EmitLog(OpCodes.Shr_Un);
+            il.EmitLog(OpCodes.Or);
+            il.EmitLog(OpCodes.Stloc, 0);
+            il.EmitLog(OpCodes.Ldloc, 1);
+            il.EmitLog(OpCodes.Ldc_I4_5);
+            il.EmitLog(OpCodes.Shr_Un);
+            il.EmitLog(OpCodes.Stloc, 1);
+            il.EmitLog(OpCodes.Ldloc, 2);
+            il.EmitLog(OpCodes.Ldc_I4_5);
+            il.EmitLog(OpCodes.Sub);
+            il.EmitLog(OpCodes.Stloc, 2);
+            il.EmitLog(OpCodes.Ldloc, 0);
+            il.EmitLog(OpCodes.Ldloc, 1);
+            il.EmitLog(OpCodes.Ldarg_0);
+            il.EmitLogCall(OpCodes.Callvirt, Item__GetType, null);
+            il.EmitLog(OpCodes.Ldc_I4_S, 63);
+            il.EmitLog(OpCodes.And);
+            il.EmitLog(OpCodes.Shr_Un);
+            il.EmitLog(OpCodes.Or);
+            il.EmitLog(OpCodes.Stloc, 0);
+            il.EmitLog(OpCodes.Ldloc, 1);
+            il.EmitLog(OpCodes.Ldc_I4_S, 11);
+            il.EmitLog(OpCodes.Shr_Un);
+            il.EmitLog(OpCodes.Stloc, 1);
+            il.EmitLog(OpCodes.Ldloc, 2);
+            il.EmitLog(OpCodes.Ldc_I4_S, 11);
+            il.EmitLog(OpCodes.Sub);
+            il.EmitLog(OpCodes.Stloc, 2);
+            il.EmitLog(OpCodes.Ldloc, 2);
+            il.EmitLog(OpCodes.Ldc_I4_S, 26);
+            il.EmitLog(OpCodes.Sub);
+            il.EmitLog(OpCodes.Stloc, 2);
+            il.EmitLog(OpCodes.Ldarg_0);
+            il.EmitLogCall(OpCodes.Callvirt, Item__GetSubtypeCode, null);
+            il.EmitLog(OpCodes.Stloc_S, 4);
+            il.EmitLog(OpCodes.Ldc_I4_0);
+            il.EmitLog(OpCodes.Stloc_S, 5);
+            il.MarkLabel(labels[7]);
+            il.EmitLog(OpCodes.Br_S, labels[2]);
+            il.EmitLog(OpCodes.Ldloc_S, 4);
+            il.EmitLog(OpCodes.Ldloc_S, 5);
+            il.EmitLogCall(OpCodes.Callvirt, String__GetChars, null);
+            il.EmitLog(OpCodes.Stloc_S, 6);
+            il.EmitLog(OpCodes.Ldloc_S, 6);
+            il.EmitLog(OpCodes.Stloc_S, 7); 
+            il.EmitLog(OpCodes.Ldloc_S, 7);
+            il.EmitLog(OpCodes.Ldc_I4_S, 65);
+            il.EmitLog(OpCodes.Bge_S, labels[3]);
+            il.MarkLabel(labels[6]);
+            il.EmitLog(OpCodes.Br_S, labels[4]);
+            il.EmitLog(OpCodes.Ldloc_S, 7);
+            il.EmitLog(OpCodes.Ldc_I4_S, 96);
+            il.EmitLog(OpCodes.Ble_S, labels[4]);
+            il.EmitLog(OpCodes.Ldloc_S, 7);
+            il.EmitLog(OpCodes.Ldc_I4_S, 123);
+            il.EmitLog(OpCodes.Blt_S, labels[5]);
+            il.EmitLog(OpCodes.Br_S, labels[4]);
+            il.MarkLabel(labels[3]);
+            il.EmitLog(OpCodes.Ldloc_S, 6);
+            il.EmitLog(OpCodes.Ldc_I4_S, 65);
+            il.EmitLog(OpCodes.Ldloc, 2);
+            il.EmitLog(OpCodes.Add);
+            il.EmitLog(OpCodes.Bgt_S, labels[6]);
+            il.EmitLog(OpCodes.Ldloc, 0);
+            il.EmitLog(OpCodes.Ldloc, 1);
+            il.EmitLog(OpCodes.Ldloc_S, 6);
+            il.EmitLog(OpCodes.Ldc_I4_S, 65);
+            il.EmitLog(OpCodes.Sub);
+            il.EmitLog(OpCodes.Ldc_I4_S, 63);
+            il.EmitLog(OpCodes.And);
+            il.EmitLog(OpCodes.Shr_Un);
+            il.EmitLog(OpCodes.Xor);
+            il.EmitLog(OpCodes.Stloc, 0);
+            il.EmitLog(OpCodes.Br_S, labels[2]);
+            il.MarkLabel(labels[5]);
+            il.EmitLog(OpCodes.Ldloc, 0);
+            il.EmitLog(OpCodes.Ldloc, 1);
+            il.EmitLog(OpCodes.Ldloc_S, 6);
+            il.EmitLog(OpCodes.Ldc_I4_S, 97);
+            il.EmitLog(OpCodes.Sub);
+            il.EmitLog(OpCodes.Ldloc, 2);
+            il.EmitLog(OpCodes.Add);
+            il.EmitLog(OpCodes.Ldc_I4_S, 63);
+            il.EmitLog(OpCodes.And);
+            il.EmitLog(OpCodes.Shr_Un);
+            il.EmitLog(OpCodes.Xor);
+            il.EmitLog(OpCodes.Stloc, 0);
+            il.MarkLabel(labels[4]);
+            il.EmitLog(OpCodes.Ldloc_S, 5);
+            il.EmitLog(OpCodes.Ldc_I4_1);
+            il.EmitLog(OpCodes.Add);
+            il.EmitLog(OpCodes.Stloc_S, 5);
+            il.MarkLabel(labels[2]);
+            il.EmitLog(OpCodes.Ldloc_S, 5);
+            il.EmitLog(OpCodes.Ldloc_S, 4);
+            il.EmitLogCall(OpCodes.Callvirt, String__GetLength, null);
+            // You don't know how many hours I have wasted on this...
+            // il.Emit(OpCodes.Blt_S, labels[7]); is the opcode that is in the compiled binary
+            // But ILGenerator can't produce Blt_S with the label??
+            // il.EmitLog(OpCodes.Blt, labels[7]);
+            il.EmitLog(OpCodes.Clt);
+            il.EmitLog(OpCodes.Brtrue, labels[7]);
+            il.EmitLog(OpCodes.Ldloc, 0);
+            il.EmitLog(OpCodes.Ret);
         }
 
-        private static ulong getRank(Item item)
+
+        public static void GenerateILGetRankIL()
+        {
+            DynamicMethod dynamicMethod = new DynamicMethod("getRank",
+                MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(ulong),
+                new[] { typeof(Item) }, typeof(Sort), false);
+            // DynamicMethod dynamicMethod = new(
+            //     "getRank",
+            //     typeof(ulong),
+            //     new[] { typeof(Item) }
+            // );
+            ILGenerator il = dynamicMethod.GetILGenerator(1024 * 4);
+
+            // AssemblyName assemblyName = new AssemblyName("peanits");
+            // AssemblyBuilder assembly = Thread.GetDomain().DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
+            // ModuleBuilder moduleBuilder = assembly.DefineDynamicModule(assemblyName.Name, "peanits.dll", true);
+            // TypeBuilder typeBuilder = moduleBuilder.DefineType("MyClass", TypeAttributes.Public | TypeAttributes.Class);
+            // MethodBuilder m = typeBuilder.DefineMethod("ShitMethod", MethodAttributes.Public | MethodAttributes.Static,
+            //     CallingConventions.Standard, typeof(ulong),
+            //     new[] { typeof(Item) });
+            // ILGenerator il = m.GetILGenerator(1024*4);
+
+            doILStuff(il);
+
+            // typeBuilder.CreateType();
+
+            // assembly.Save("peanits.dll", PortableExecutableKinds.ILOnly, ImageFileMachine.I386);
+            // m.Invoke(null, BindingFlags.Public | BindingFlags.Static, null, new object[]{new Item("ShitItem", ItemType.Amulet, ItemClass.None, ItemRarity.Broken, TierId.FromId(1), false, "shit",
+            //     "balls", "ass", new List<Item.AffixReference>())}, null);
+
+            dynamicMethod.Invoke(null, new[]
+            {
+                new Item("ShitItem", ItemType.Amulet, ItemClass.None, ItemRarity.Broken, TierId.FromId(1), false,
+                    "shit",
+                    "balls", "ass", new List<Item.AffixReference>())
+            });
+            // OneParameter<ulong, Item> del =
+            //     (OneParameter<ulong, Item>)dynamicMethod.CreateDelegate(typeof(OneParameter<ulong, Item>));
+            // MelonLogger.Msg("del: " + del);
+            return;
+            // OneParameter<ulong, Item> getRankIL =
+            //     (OneParameter<ulong, Item>)dynamicMethod.CreateDelegate(typeof(OneParameter<ulong, Item>));
+            // return del;
+        }
+
+        public static ulong getRank(Item item)
         {
             /* Uniqueness
              * Rarity
