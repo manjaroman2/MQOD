@@ -90,7 +90,7 @@ namespace MQOD
             if (ZoomState >= MaxZoomState) return;
             MelonLogger.Msg("ZoomOut");
             setChunkViewRange(getChunkViewRange() + 1);
-            mapDimensionUnitsState += 40;
+            mapDimensionUnitsState += 30;
             if (IsFullscreen)
                 config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits) * 4f;
             else config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits);
@@ -110,7 +110,7 @@ namespace MQOD
             if (ZoomState <= 0) return;
             MelonLogger.Msg("ZoomIn");
             setChunkViewRange(getChunkViewRange() - 1);
-            mapDimensionUnitsState -= 40;
+            mapDimensionUnitsState -= 30;
             if (IsFullscreen)
                 config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits) * 4f;
             else config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits);

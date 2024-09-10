@@ -46,13 +46,11 @@
         <PostBuildEvent>/home/marc/RiderProjects/MQOD/build-post.sh $(Configuration)</PostBuildEvent>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="Archive.cs"/>
         <Compile Include="Features\AutoStart.cs"/>
         <Compile Include="Features\CameraZoom.cs"/>
         <Compile Include="Features\GemRadiusVisualizer\GemRadiusCreator.cs"/>
         <Compile Include="Features\GemRadiusVisualizer\GemRadiusVisualizer.cs"/>
         <Compile Include="Features\BetterMinimap.cs"/>
-        <Compile Include="Features\Sort\ILGeneratorEx.cs"/>
         <Compile Include="Features\Sort\Sort.cs"/>
         <Compile Include="Features\Sort\SortArmory.cs"/>
         <Compile Include="Features\Sort\SortItemGrid.cs"/>
@@ -70,9 +68,11 @@
         <Compile Include="UI\PanelBaseMQOD.cs"/>
         <Compile Include="UI\UI.cs"/>
         <Compile Include="UI\UIBaseMQOD.cs"/>
+        <Compile Include="Utils\Archive.cs" />
         <Compile Include="Utils\AssetManager.cs"/>
         <Compile Include="Utils\FeatureManager.cs"/>
         <Compile Include="Utils\HarmonyHelper.cs"/>
+        <Compile Include="Utils\ILGeneratorEx.cs" />
         <Compile Include="Utils\PreferencesManager.cs"/>
         <Compile Include="Utils\UnityHelper.cs"/>
     </ItemGroup>
