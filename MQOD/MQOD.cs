@@ -42,7 +42,6 @@ namespace MQOD
         public override void OnInitializeMelon()
         {
             MelonLogger.Msg("Hello from MoreQOD.");
-            Sort.GenerateILGetRankIL();
             _Instance = this;
 
             assetManager.init();

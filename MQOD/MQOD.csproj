@@ -46,6 +46,7 @@
         <PostBuildEvent>/home/marc/RiderProjects/MQOD/build-post.sh $(Configuration)</PostBuildEvent>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="Archive.cs" />
         <Compile Include="Features\AutoStart.cs"/>
         <Compile Include="Features\CameraZoom.cs"/>
         <Compile Include="Features\GemRadiusVisualizer\GemRadiusCreator.cs"/>

@@ -18,6 +18,11 @@ namespace MQOD
             sortingKeyEntry = prefManager.addHotkeyEntry("sortingKey");
             toggleAutoSortingKeyEntry = prefManager.addHotkeyEntry("toggleAutoSortingKey");
             customSortOrderingEntry = prefManager.addSettingsEntry("customSortOrderingEntry", Sort.Ordering.DEFAULT);
+            Sort.currentCalcDelegate = Sort.GenerateCalcDelegate(customSortOrderingEntry.Value);
+            customSortOrderingEntry.OnEntryValueChanged.Subscribe((_, newOrdering) =>
+            {
+                Sort.currentCalcDelegate = Sort.GenerateCalcDelegate(newOrdering);
+            });
         }
 
         public override string Name => "MQOD - Custom Sort Settings";
@@ -36,8 +41,7 @@ namespace MQOD
             List<Text> texts = new();
             Dictionary<Text, Sort.Category> CategoryIndex = new();
 
-            Sort.Ordering SortOrdering = customSortOrderingEntry.Value;
-            foreach (Sort.Category category in SortOrdering)
+            foreach (Sort.Category category in customSortOrderingEntry.Value)
             {
                 Text text = UIFactory.CreateLabel(ContentRoot, category.GetString(), category.GetString(),
                     fontSize: fontSize);
@@ -51,19 +55,17 @@ namespace MQOD
 
                 daComponentDragController.callback = () =>
                 {
-                    Sort.Ordering oldOrdering = SortOrdering;
+                    Sort.Ordering oldOrdering = customSortOrderingEntry.Value;
                     Sort.Ordering newOrdering = new(oldOrdering.Count);
                     foreach (Text textIter in texts)
                     {
                         int oldIdx = oldOrdering.IndexOf(CategoryIndex[textIter]);
-                        int newIdx = textIter.transform.GetSiblingIndex() - 1;
-                        // MelonLogger.Msg($"{oldIdx} {newIdx}");
+                        int newIdx = textIter.transform.GetSiblingIndex() - 3; // 1 offset + 2 components (hotkeys)
+                        // MelonLogger.Msg($"{oldIdx} {newIdx} {oldOrdering.Count} {newOrdering.Count}");
                         newOrdering[newIdx] = oldOrdering[oldIdx];
                     }
 
-                    // MelonLogger.Msg("C");
-                    SortOrdering = newOrdering;
-                    // MelonLogger.Msg("D");
+                    customSortOrderingEntry.Value = newOrdering;
                 };
             }
 

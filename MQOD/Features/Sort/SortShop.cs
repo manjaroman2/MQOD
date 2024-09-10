@@ -26,21 +26,7 @@ namespace MQOD
                 return;
             }
 
-            // Sort.OneParameter<ulong, Item> getRankIL = Sort.GenerateILGetRankIL();
-            foreach (Item item in MQOD.Instance.SortShopInst
-                         .ShopItemController
-                         .GetSelectedPageGrid().GetItems())
-            {
-                // ulong rankIL = getRankIL(item);
-                ulong rank = Sort.getRank(item); 
-                MelonLogger.Msg($"rankIL=  rank={rank}");
-            }
-
-            
-            MelonLogger.Msg(
-                MQOD.Instance.UIInst.FeatureSort.customSortOrderingEntry.Value.sortItemGrid(MQOD.Instance.SortShopInst
-                    .ShopItemController
-                    .GetSelectedPageGrid())
+            MelonLogger.Msg(Sort.sortItemGrid(MQOD.Instance.SortShopInst.ShopItemController.GetSelectedPageGrid())
                     ? $"Sorted Shop {MQOD.Instance.SortShopInst.ShopItemController.SelectedPage}"
                     : "There was nothing to sort :)");
         }

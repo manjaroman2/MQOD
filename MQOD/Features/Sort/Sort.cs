@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Threading;
 using Death.Items;
 using HarmonyLib;
 using MelonLoader;
@@ -12,24 +12,20 @@ namespace MQOD
 {
     public static class Sort
     {
-        public static readonly MethodInfo Item__GetUnique =
-            typeof(Item).GetProperty(nameof(Item.IsUnique))!.GetGetMethod();
-
-        public static readonly MethodInfo Item__GetRarity =
-            typeof(Item).GetProperty(nameof(Item.Rarity))!.GetGetMethod();
-
-        public static readonly MethodInfo Item__GetTier = typeof(Item).GetProperty(nameof(Item.Tier))!.GetGetMethod();
-        public static readonly MethodInfo TierId__GetId = typeof(TierId).GetProperty(nameof(TierId.Id))!.GetGetMethod();
-        public static readonly MethodInfo Item__GetType = typeof(Item).GetProperty(nameof(Item.Type))!.GetGetMethod();
-
-        public static readonly MethodInfo Item__GetSubtypeCode =
-            typeof(Item).GetProperty(nameof(Item.SubtypeCode))!.GetGetMethod();
-
         public static readonly MethodInfo String__GetChars =
             typeof(string).GetProperty("Chars", new[] { typeof(int) })!.GetGetMethod();
 
         public static readonly MethodInfo String__GetLength =
             typeof(string).GetProperty(nameof(string.Length))!.GetGetMethod();
+
+        public static CalcDelegate currentCalcDelegate;
+
+        private const bool doNop = false;
+        private const int uniqueArg = 0;
+        private const int rarityArg = 1;
+        private const int tierIdArg = 2;
+        private const int typeArg = 3;
+        private const int subtypeCodeArg = 4;
 
         public enum Category
         {
@@ -42,297 +38,266 @@ namespace MQOD
 
         private static readonly FieldInfo ItemGridSlotsAccessor = typeof(ItemGrid).GetField("_slots", AccessTools.all);
 
-        public delegate TReturn OneParameter<out TReturn, in TParameter0>(TParameter0 p0);
+        public delegate ulong CalcDelegate(bool IsUnique, int Rarity, int Tier, int Type, string SubType);
 
-        private static void doILStuff(ILGenerator il)
+        public static CalcDelegate GenerateCalcDelegate(Ordering ordering)
         {
-            List<Label> labels = new();
+            MelonLogger.Msg("Generating new CalcDelegate");
+            DynamicMethod dynamicMethod = new DynamicMethod(
+                "calcIL", typeof(ulong), new[] { typeof(bool), typeof(int), typeof(int), typeof(int), typeof(string) });
 
-            il.DeclareLocal(typeof(ulong));
-            il.DeclareLocal(typeof(ulong));
-            il.DeclareLocal(typeof(uint));
-            il.DeclareLocal(typeof(TierId));
-            il.DeclareLocal(typeof(string));
-            il.DeclareLocal(typeof(int));
-            il.DeclareLocal(typeof(int));
-            il.DeclareLocal(typeof(int));
-            for (int i = 0; i < 8; i++)
+            ILGenerator il = dynamicMethod.GetILGenerator(512);
+            buildCalcIL(il, ordering);
+            return (CalcDelegate)dynamicMethod.CreateDelegate(typeof(CalcDelegate));
+
+            [SuppressMessage("ReSharper", "ConditionIsAlwaysTrueOrFalse")]
+            static void buildCalcIL(ILGenerator il, Ordering ordering)
             {
-                labels.Add(il.DefineLabel());
-            }
+                Label[] l = new Label[8];
+                for (int i = 0; i < l.Length; i++) l[i] = il.DefineLabel();
+                LocalBuilder rank = il.DeclareLocal(typeof(ulong)); // 0 local 
+                LocalBuilder mask = il.DeclareLocal(typeof(ulong)); // 1
+                LocalBuilder bitsLeft = il.DeclareLocal(typeof(int)); // 2
+                LocalBuilder stringTmp = il.DeclareLocal(typeof(string)); // 3
+                LocalBuilder someInt4 = il.DeclareLocal(typeof(int)); // 4
+                LocalBuilder someInt5 = il.DeclareLocal(typeof(int)); // 5
+                LocalBuilder someInt6 = il.DeclareLocal(typeof(int)); // 6 
 
-            il.EmitLog(OpCodes.Ldc_I4_0);
-            il.EmitLog(OpCodes.Conv_I8);
-            il.EmitLog(OpCodes.Stloc, 0);
-            il.EmitLog(OpCodes.Ldarg_0);
-            il.EmitLog(OpCodes.Brtrue_S, labels[0]);
-            il.EmitLog(OpCodes.Ldloc, 0);
-            il.EmitLog(OpCodes.Ret);
-            il.MarkLabel(labels[0]);
-            il.EmitLog(OpCodes.Ldc_I8, -9223372036854775808);
-            il.EmitLog(OpCodes.Stloc, 1);
-            il.EmitLog(OpCodes.Ldc_I4_S, 64);
-            il.EmitLog(OpCodes.Stloc, 2);
-            il.EmitLog(OpCodes.Ldarg_0);
-            il.EmitLogCall(OpCodes.Callvirt, Item__GetUnique, null);
-            il.EmitLog(OpCodes.Brfalse_S, labels[1]);
-            il.EmitLog(OpCodes.Ldloc, 0);
-            il.EmitLog(OpCodes.Ldloc, 1);
-            il.EmitLog(OpCodes.Or);
-            il.EmitLog(OpCodes.Stloc, 0);
-            il.MarkLabel(labels[1]);
-            il.EmitLog(OpCodes.Ldloc, 1);
-            il.EmitLog(OpCodes.Ldc_I4_1);
-            il.EmitLog(OpCodes.Shr_Un);
-            il.EmitLog(OpCodes.Stloc, 1);
-            il.EmitLog(OpCodes.Ldloc, 2);
-            il.EmitLog(OpCodes.Ldc_I4_1);
-            il.EmitLog(OpCodes.Sub);
-            il.EmitLog(OpCodes.Stloc, 2);
-            il.EmitLog(OpCodes.Ldloc, 0);
-            il.EmitLog(OpCodes.Ldloc, 1);
-            il.EmitLog(OpCodes.Ldc_I4_6);
-            il.EmitLog(OpCodes.Ldarg_0);
-            il.EmitLogCall(OpCodes.Callvirt, Item__GetRarity, null);
-            il.EmitLog(OpCodes.Sub);
-            il.EmitLog(OpCodes.Ldc_I4_S, 63);
-            il.EmitLog(OpCodes.And);
-            il.EmitLog(OpCodes.Shr_Un);
-            il.EmitLog(OpCodes.Or);
-            il.EmitLog(OpCodes.Stloc, 0);
-            il.EmitLog(OpCodes.Ldloc, 1);
-            il.EmitLog(OpCodes.Ldc_I4_6);
-            il.EmitLog(OpCodes.Shr_Un);
-            il.EmitLog(OpCodes.Stloc, 1);
-            il.EmitLog(OpCodes.Ldloc, 2);
-            il.EmitLog(OpCodes.Ldc_I4_6);
-            il.EmitLog(OpCodes.Sub);
-            il.EmitLog(OpCodes.Stloc, 2);
-            il.EmitLog(OpCodes.Ldloc, 0);
-            il.EmitLog(OpCodes.Ldloc, 1);
-            il.EmitLog(OpCodes.Ldc_I4_5);
-            il.EmitLog(OpCodes.Ldarg_0);
-            il.EmitLogCall(OpCodes.Callvirt, Item__GetTier, null);
-            il.EmitLog(OpCodes.Stloc, 3);
-            il.EmitLog(OpCodes.Ldloca_S, 3);
-            il.EmitLogCall(OpCodes.Callvirt, TierId__GetId, null);
-            il.EmitLog(OpCodes.Sub);
-            il.EmitLog(OpCodes.Ldc_I4_S, 63);
-            il.EmitLog(OpCodes.And);
-            il.EmitLog(OpCodes.Shr_Un);
-            il.EmitLog(OpCodes.Or);
-            il.EmitLog(OpCodes.Stloc, 0);
-            il.EmitLog(OpCodes.Ldloc, 1);
-            il.EmitLog(OpCodes.Ldc_I4_5);
-            il.EmitLog(OpCodes.Shr_Un);
-            il.EmitLog(OpCodes.Stloc, 1);
-            il.EmitLog(OpCodes.Ldloc, 2);
-            il.EmitLog(OpCodes.Ldc_I4_5);
-            il.EmitLog(OpCodes.Sub);
-            il.EmitLog(OpCodes.Stloc, 2);
-            il.EmitLog(OpCodes.Ldloc, 0);
-            il.EmitLog(OpCodes.Ldloc, 1);
-            il.EmitLog(OpCodes.Ldarg_0);
-            il.EmitLogCall(OpCodes.Callvirt, Item__GetType, null);
-            il.EmitLog(OpCodes.Ldc_I4_S, 63);
-            il.EmitLog(OpCodes.And);
-            il.EmitLog(OpCodes.Shr_Un);
-            il.EmitLog(OpCodes.Or);
-            il.EmitLog(OpCodes.Stloc, 0);
-            il.EmitLog(OpCodes.Ldloc, 1);
-            il.EmitLog(OpCodes.Ldc_I4_S, 11);
-            il.EmitLog(OpCodes.Shr_Un);
-            il.EmitLog(OpCodes.Stloc, 1);
-            il.EmitLog(OpCodes.Ldloc, 2);
-            il.EmitLog(OpCodes.Ldc_I4_S, 11);
-            il.EmitLog(OpCodes.Sub);
-            il.EmitLog(OpCodes.Stloc, 2);
-            il.EmitLog(OpCodes.Ldloc, 2);
-            il.EmitLog(OpCodes.Ldc_I4_S, 26);
-            il.EmitLog(OpCodes.Sub);
-            il.EmitLog(OpCodes.Stloc, 2);
-            il.EmitLog(OpCodes.Ldarg_0);
-            il.EmitLogCall(OpCodes.Callvirt, Item__GetSubtypeCode, null);
-            il.EmitLog(OpCodes.Stloc_S, 4);
-            il.EmitLog(OpCodes.Ldc_I4_0);
-            il.EmitLog(OpCodes.Stloc_S, 5);
-            il.MarkLabel(labels[7]);
-            il.EmitLog(OpCodes.Br_S, labels[2]);
-            il.EmitLog(OpCodes.Ldloc_S, 4);
-            il.EmitLog(OpCodes.Ldloc_S, 5);
-            il.EmitLogCall(OpCodes.Callvirt, String__GetChars, null);
-            il.EmitLog(OpCodes.Stloc_S, 6);
-            il.EmitLog(OpCodes.Ldloc_S, 6);
-            il.EmitLog(OpCodes.Stloc_S, 7); 
-            il.EmitLog(OpCodes.Ldloc_S, 7);
-            il.EmitLog(OpCodes.Ldc_I4_S, 65);
-            il.EmitLog(OpCodes.Bge_S, labels[3]);
-            il.MarkLabel(labels[6]);
-            il.EmitLog(OpCodes.Br_S, labels[4]);
-            il.EmitLog(OpCodes.Ldloc_S, 7);
-            il.EmitLog(OpCodes.Ldc_I4_S, 96);
-            il.EmitLog(OpCodes.Ble_S, labels[4]);
-            il.EmitLog(OpCodes.Ldloc_S, 7);
-            il.EmitLog(OpCodes.Ldc_I4_S, 123);
-            il.EmitLog(OpCodes.Blt_S, labels[5]);
-            il.EmitLog(OpCodes.Br_S, labels[4]);
-            il.MarkLabel(labels[3]);
-            il.EmitLog(OpCodes.Ldloc_S, 6);
-            il.EmitLog(OpCodes.Ldc_I4_S, 65);
-            il.EmitLog(OpCodes.Ldloc, 2);
-            il.EmitLog(OpCodes.Add);
-            il.EmitLog(OpCodes.Bgt_S, labels[6]);
-            il.EmitLog(OpCodes.Ldloc, 0);
-            il.EmitLog(OpCodes.Ldloc, 1);
-            il.EmitLog(OpCodes.Ldloc_S, 6);
-            il.EmitLog(OpCodes.Ldc_I4_S, 65);
-            il.EmitLog(OpCodes.Sub);
-            il.EmitLog(OpCodes.Ldc_I4_S, 63);
-            il.EmitLog(OpCodes.And);
-            il.EmitLog(OpCodes.Shr_Un);
-            il.EmitLog(OpCodes.Xor);
-            il.EmitLog(OpCodes.Stloc, 0);
-            il.EmitLog(OpCodes.Br_S, labels[2]);
-            il.MarkLabel(labels[5]);
-            il.EmitLog(OpCodes.Ldloc, 0);
-            il.EmitLog(OpCodes.Ldloc, 1);
-            il.EmitLog(OpCodes.Ldloc_S, 6);
-            il.EmitLog(OpCodes.Ldc_I4_S, 97);
-            il.EmitLog(OpCodes.Sub);
-            il.EmitLog(OpCodes.Ldloc, 2);
-            il.EmitLog(OpCodes.Add);
-            il.EmitLog(OpCodes.Ldc_I4_S, 63);
-            il.EmitLog(OpCodes.And);
-            il.EmitLog(OpCodes.Shr_Un);
-            il.EmitLog(OpCodes.Xor);
-            il.EmitLog(OpCodes.Stloc, 0);
-            il.MarkLabel(labels[4]);
-            il.EmitLog(OpCodes.Ldloc_S, 5);
-            il.EmitLog(OpCodes.Ldc_I4_1);
-            il.EmitLog(OpCodes.Add);
-            il.EmitLog(OpCodes.Stloc_S, 5);
-            il.MarkLabel(labels[2]);
-            il.EmitLog(OpCodes.Ldloc_S, 5);
-            il.EmitLog(OpCodes.Ldloc_S, 4);
-            il.EmitLogCall(OpCodes.Callvirt, String__GetLength, null);
-            // You don't know how many hours I have wasted on this...
-            // il.Emit(OpCodes.Blt_S, labels[7]); is the opcode that is in the compiled binary
-            // But ILGenerator can't produce Blt_S with the label??
-            // il.EmitLog(OpCodes.Blt, labels[7]);
-            il.EmitLog(OpCodes.Clt);
-            il.EmitLog(OpCodes.Brtrue, labels[7]);
-            il.EmitLog(OpCodes.Ldloc, 0);
-            il.EmitLog(OpCodes.Ret);
-        }
-
-
-        public static void GenerateILGetRankIL()
-        {
-            DynamicMethod dynamicMethod = new DynamicMethod("getRank",
-                MethodAttributes.Public | MethodAttributes.Static, CallingConventions.Standard, typeof(ulong),
-                new[] { typeof(Item) }, typeof(Sort), false);
-            // DynamicMethod dynamicMethod = new(
-            //     "getRank",
-            //     typeof(ulong),
-            //     new[] { typeof(Item) }
-            // );
-            ILGenerator il = dynamicMethod.GetILGenerator(1024 * 4);
-
-            // AssemblyName assemblyName = new AssemblyName("peanits");
-            // AssemblyBuilder assembly = Thread.GetDomain().DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
-            // ModuleBuilder moduleBuilder = assembly.DefineDynamicModule(assemblyName.Name, "peanits.dll", true);
-            // TypeBuilder typeBuilder = moduleBuilder.DefineType("MyClass", TypeAttributes.Public | TypeAttributes.Class);
-            // MethodBuilder m = typeBuilder.DefineMethod("ShitMethod", MethodAttributes.Public | MethodAttributes.Static,
-            //     CallingConventions.Standard, typeof(ulong),
-            //     new[] { typeof(Item) });
-            // ILGenerator il = m.GetILGenerator(1024*4);
-
-            doILStuff(il);
-
-            // typeBuilder.CreateType();
-
-            // assembly.Save("peanits.dll", PortableExecutableKinds.ILOnly, ImageFileMachine.I386);
-            // m.Invoke(null, BindingFlags.Public | BindingFlags.Static, null, new object[]{new Item("ShitItem", ItemType.Amulet, ItemClass.None, ItemRarity.Broken, TierId.FromId(1), false, "shit",
-            //     "balls", "ass", new List<Item.AffixReference>())}, null);
-
-            dynamicMethod.Invoke(null, new[]
-            {
-                new Item("ShitItem", ItemType.Amulet, ItemClass.None, ItemRarity.Broken, TierId.FromId(1), false,
-                    "shit",
-                    "balls", "ass", new List<Item.AffixReference>())
-            });
-            // OneParameter<ulong, Item> del =
-            //     (OneParameter<ulong, Item>)dynamicMethod.CreateDelegate(typeof(OneParameter<ulong, Item>));
-            // MelonLogger.Msg("del: " + del);
-            return;
-            // OneParameter<ulong, Item> getRankIL =
-            //     (OneParameter<ulong, Item>)dynamicMethod.CreateDelegate(typeof(OneParameter<ulong, Item>));
-            // return del;
-        }
-
-        public static ulong getRank(Item item)
-        {
-            /* Uniqueness
-             * Rarity
-             * Tier
-             * Type
-             * SubType
-             */
-
-
-            // This method creates an absolute ordering (hopefully)  
-            ulong rank = 0b_0000000000000000000000000000000000000000000000000000000000000000;
-            if (item == null) return rank; // nulls at the end
-
-            ulong mask = 0b_1000000000000000000000000000000000000000000000000000000000000000;
-            int bitsLeft = 64;
-
-            //  - 1 bit for uniqueness
-            if (item.IsUnique) rank |= mask;
-            mask >>= 1;
-            bitsLeft -= 1;
-
-            //  - 6 bits for rarity
-            rank |= mask >> ((int)ItemRarity._Count - (int)item.Rarity);
-            mask >>= (int)ItemRarity._Count;
-            bitsLeft -= (int)ItemRarity._Count;
-
-            /* Tier kind of beats rarity so this
-             * should be reversed, first tier then rarity?
-             * Pro: - better stats sorting
-             * Con: - Looks ugly in inventory
-             */
-
-            //  - 5 bits for tiers 
-            rank |= mask >> (TierId.Count - item.Tier.Id);
-            mask >>= TierId.Count;
-            bitsLeft -= TierId.Count;
-
-            //  - 11 bits for type
-            rank |= mask >> (int)item.Type;
-            mask >>= (int)ItemType._Count;
-            bitsLeft -= (int)ItemType._Count;
-
-            //  - 41 bits for lowercase chars + [A,B,C,D,E,F,G,H,I,J,K,L,M,N,O] in subtype  
-            // There's prob a smarter way 
-
-            bitsLeft -= 26;
-            foreach (int c in item.SubtypeCode)
-                switch (c)
+                // ulong num = 0uL;
+                il.Emit(OpCodes.Ldc_I4_0);
+                il.Emit(OpCodes.Conv_I8);
+                il.Emit(OpCodes.Stloc, rank.LocalIndex);
+                // ulong num2 = 9223372036854775808uL;
+                il.Emit(OpCodes.Ldc_I8, -9223372036854775808);
+                il.Emit(OpCodes.Stloc, mask.LocalIndex);
+                // int num3 = 64;
+                il.Emit(OpCodes.Ldc_I4_S, 64);
+                il.Emit(OpCodes.Stloc, bitsLeft.LocalIndex);
+                foreach (Category category in ordering)
                 {
-                    case >= 65 when c <= 65 + bitsLeft:
-                        rank ^= mask >> (c - 65);
-                        break;
-                    case > 96 and < 123:
-                        rank ^= mask >> (c - 97 + bitsLeft);
-                        break;
+                    switch (category)
+                    {
+                        case Category.UNIQUENESS:
+                            // if (IsUnique)
+                            il.Emit(OpCodes.Ldarg, uniqueArg);
+                            il.Emit(OpCodes.Brfalse_S, l[0]);
+                            // num |= num2;
+                            il.Emit(OpCodes.Ldloc, rank.LocalIndex);
+                            il.Emit(OpCodes.Ldloc, mask.LocalIndex);
+                            il.Emit(OpCodes.Or);
+                            il.Emit(OpCodes.Stloc, rank.LocalIndex);
+                            // num2 >>= 1;
+                            il.MarkLabel(l[0]);
+                            il.Emit(OpCodes.Ldloc, mask.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_1);
+                            il.Emit(OpCodes.Shr_Un);
+                            il.Emit(OpCodes.Stloc, mask.LocalIndex);
+                            // num3--;
+                            il.Emit(OpCodes.Ldloc, bitsLeft.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_1);
+                            il.Emit(OpCodes.Sub);
+                            il.Emit(OpCodes.Stloc, bitsLeft.LocalIndex);
+                            break;
+                        case Category.RARITY:
+                            // num |= num2 >> itemRarityCount - itemRarity;
+                            il.Emit(OpCodes.Ldloc, rank.LocalIndex);
+                            il.Emit(OpCodes.Ldloc, mask.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4, (int)ItemRarity._Count);
+                            il.Emit(OpCodes.Ldarg, rarityArg);
+                            il.Emit(OpCodes.Sub);
+                            if (doNop)
+                            {
+                                il.Emit(OpCodes.Ldc_I4_S, 63); // The compiler puts these NOPs before ShrUn... Why? 
+                                il.Emit(OpCodes.And);
+                            }
+
+                            il.Emit(OpCodes.Shr_Un);
+                            il.Emit(OpCodes.Or);
+                            il.Emit(OpCodes.Stloc, rank.LocalIndex);
+                            // num2 >>= itemRarityCount;
+                            il.Emit(OpCodes.Ldloc, mask.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4, (int)ItemRarity._Count);
+                            il.Emit(OpCodes.Shr_Un);
+                            il.Emit(OpCodes.Stloc, mask.LocalIndex);
+                            // num3 -= itemRarityCount;
+                            il.Emit(OpCodes.Ldloc, bitsLeft.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4, (int)ItemRarity._Count);
+                            il.Emit(OpCodes.Sub);
+                            il.Emit(OpCodes.Stloc, bitsLeft.LocalIndex);
+                            break;
+                        case Category.TIER:
+                            // num |= num2 >> tierIdCount - itemTierId;
+                            il.Emit(OpCodes.Ldloc, rank.LocalIndex);
+                            il.Emit(OpCodes.Ldloc, mask.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4, TierId.Count);
+                            il.Emit(OpCodes.Ldarg, tierIdArg);
+                            il.Emit(OpCodes.Sub);
+                            if (doNop)
+                            {
+                                il.Emit(OpCodes.Ldc_I4_S, 63); // The compiler puts these NOPs before ShrUn... Why? 
+                                il.Emit(OpCodes.And);
+                            }
+
+                            il.Emit(OpCodes.Shr_Un);
+                            il.Emit(OpCodes.Or);
+                            il.Emit(OpCodes.Stloc, rank.LocalIndex);
+                            // num2 >>= tierIdCount;
+                            il.Emit(OpCodes.Ldloc, mask.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4, TierId.Count);
+                            il.Emit(OpCodes.Shr_Un);
+                            il.Emit(OpCodes.Stloc, mask.LocalIndex);
+                            // num3 -= tierIdCount;
+                            il.Emit(OpCodes.Ldloc, bitsLeft.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4, TierId.Count);
+                            il.Emit(OpCodes.Sub);
+                            il.Emit(OpCodes.Stloc, bitsLeft.LocalIndex);
+                            break;
+                        case Category.TYPE:
+                            // num |= num2 >> itemType;
+                            il.Emit(OpCodes.Ldloc, rank.LocalIndex);
+                            il.Emit(OpCodes.Ldloc, mask.LocalIndex);
+                            il.Emit(OpCodes.Ldarg, typeArg);
+                            if (doNop)
+                            {
+                                il.Emit(OpCodes.Ldc_I4_S, 63); // The compiler puts these NOPs before ShrUn... Why? 
+                                il.Emit(OpCodes.And);
+                            }
+
+                            il.Emit(OpCodes.Shr_Un);
+                            il.Emit(OpCodes.Or);
+                            il.Emit(OpCodes.Stloc, rank.LocalIndex);
+                            // num2 >>= itemTypeCount;
+                            il.Emit(OpCodes.Ldloc, mask.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_S, (int)ItemType._Count);
+                            il.Emit(OpCodes.Shr_Un);
+                            il.Emit(OpCodes.Stloc, mask.LocalIndex);
+                            // num3 -= itemTypeCount;
+                            il.Emit(OpCodes.Ldloc, bitsLeft.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_S, (int)ItemType._Count);
+                            il.Emit(OpCodes.Sub);
+                            il.Emit(OpCodes.Stloc, bitsLeft.LocalIndex);
+                            // num3 -= 26;
+                            il.Emit(OpCodes.Ldloc, bitsLeft.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_S, 26);
+                            il.Emit(OpCodes.Sub);
+                            il.Emit(OpCodes.Stloc, bitsLeft.LocalIndex);
+                            // foreach
+                            il.Emit(OpCodes.Ldarg_S, subtypeCodeArg);
+                            il.Emit(OpCodes.Stloc, stringTmp.LocalIndex);
+                            // (no C# code)
+                            il.Emit(OpCodes.Ldc_I4_0);
+                            il.Emit(OpCodes.Stloc_S, someInt4.LocalIndex);
+                            il.Emit(OpCodes.Br, l[6]);
+                            // loop start (head: IL_00c2)
+                            // int num5 = num4;
+                            il.MarkLabel(l[1]);
+                            il.Emit(OpCodes.Ldloc, stringTmp.LocalIndex);
+                            il.Emit(OpCodes.Ldloc_S, someInt4.LocalIndex);
+                            il.EmitCall(OpCodes.Callvirt, String__GetChars, null);
+                            il.Emit(OpCodes.Stloc_S, someInt5.LocalIndex);
+                            il.Emit(OpCodes.Ldloc_S, someInt5.LocalIndex);
+                            il.Emit(OpCodes.Stloc_S, someInt6.LocalIndex);
+                            // if (num5 < 65)
+                            il.Emit(OpCodes.Ldloc_S, someInt6.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_S, 65);
+                            il.Emit(OpCodes.Bge_S, l[3]);
+                            // if (num5 > 96 && num5 < 123)
+                            il.Emit(OpCodes.Br, l[4]);
+                            // loop start (head: IL_0096)
+                            il.MarkLabel(l[2]);
+                            il.Emit(OpCodes.Ldloc_S, someInt6.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_S, 96);
+                            il.Emit(OpCodes.Ble_S, l[4]);
+                            il.Emit(OpCodes.Ldloc_S, someInt6.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_S, 123);
+                            il.Emit(OpCodes.Clt);
+                            il.Emit(OpCodes.Brtrue, l[5]);
+                            // if (num4 > 65 + num3)
+                            il.Emit(OpCodes.Br_S, l[4]);
+                            il.MarkLabel(l[3]);
+                            il.Emit(OpCodes.Ldloc_S, someInt5.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_S, 65);
+                            il.Emit(OpCodes.Ldloc, bitsLeft.LocalIndex);
+                            il.Emit(OpCodes.Add);
+                            il.Emit(OpCodes.Bgt_S, l[2]);
+                            // end loop
+                            // num ^= num2 >> num4 - 65;
+                            il.Emit(OpCodes.Ldloc, rank.LocalIndex);
+                            il.Emit(OpCodes.Ldloc, mask.LocalIndex);
+                            il.Emit(OpCodes.Ldloc_S, someInt5.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_S, 65);
+                            il.Emit(OpCodes.Sub);
+                            if (doNop)
+                            {
+                                il.Emit(OpCodes.Ldc_I4_S, 63); // The compiler puts these NOPs before ShrUn... Why? 
+                                il.Emit(OpCodes.And);
+                            }
+
+                            il.Emit(OpCodes.Shr_Un);
+                            il.Emit(OpCodes.Xor);
+                            il.Emit(OpCodes.Stloc, rank.LocalIndex);
+                            // num ^= num2 >> num4 - 97 + num3;
+                            il.Emit(OpCodes.Br_S, l[4]);
+                            il.MarkLabel(l[5]);
+                            il.Emit(OpCodes.Ldloc, rank.LocalIndex);
+                            il.Emit(OpCodes.Ldloc, mask.LocalIndex);
+                            il.Emit(OpCodes.Ldloc_S, someInt5.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_S, 97);
+                            il.Emit(OpCodes.Sub);
+                            il.Emit(OpCodes.Ldloc, bitsLeft.LocalIndex);
+                            il.Emit(OpCodes.Add);
+                            if (doNop)
+                            {
+                                il.Emit(OpCodes.Ldc_I4_S, 63); // The compiler puts these NOPs before ShrUn... Why? 
+                                il.Emit(OpCodes.And);
+                            }
+
+                            il.Emit(OpCodes.Shr_Un);
+                            il.Emit(OpCodes.Xor);
+                            il.Emit(OpCodes.Stloc, rank.LocalIndex);
+                            il.MarkLabel(l[4]);
+                            il.Emit(OpCodes.Ldloc_S, someInt4.LocalIndex);
+                            il.Emit(OpCodes.Ldc_I4_1);
+                            il.Emit(OpCodes.Add);
+                            il.Emit(OpCodes.Stloc_S, someInt4.LocalIndex);
+                            // return num;
+                            il.MarkLabel(l[6]);
+                            il.Emit(OpCodes.Ldloc_S, someInt4.LocalIndex);
+                            il.Emit(OpCodes.Ldloc, stringTmp.LocalIndex);
+                            il.EmitCall(OpCodes.Callvirt, String__GetLength, null);
+                            il.Emit(OpCodes.Clt);
+                            il.Emit(OpCodes.Brtrue, l[1]);
+                            // end loop
+                            break;
+                        case Category.NULL:
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
                 }
 
-            return rank;
+                il.Emit(OpCodes.Ldloc, rank.LocalIndex);
+                il.Emit(OpCodes.Ret);
+            }
         }
 
-        // QuickSort 
-        public static void SortArrayInPlace(ulong[] array, int leftIndex, int rightIndex)
+        // public static void Save()
+        // {
+        //     AssemblyName assemblyName = new AssemblyName("testAssembly");
+        //     AssemblyBuilder assemblyBuilder =
+        //         AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
+        //     ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule("testModule", "testAssembly.dll");
+        //     TypeBuilder typeBuilder =
+        //         moduleBuilder.DefineType("TestClass", TypeAttributes.Public | TypeAttributes.Class);
+        //     MethodBuilder methodBuilder =
+        //         typeBuilder.DefineMethod("calcIL", MethodAttributes.Public | MethodAttributes.Static);
+        //     ILGenerator il = methodBuilder.GetILGenerator(512);
+        //     buildCalcIL(il);
+        //     typeBuilder.CreateType();
+        //     assemblyBuilder.Save("testAssembly.dll");
+        // }
+
+        public static void SortArrayInPlace(ulong[] array, int leftIndex, int rightIndex) // QuickSort 
         {
             int i = leftIndex;
             int j = rightIndex;
@@ -389,98 +354,47 @@ namespace MQOD
             {
                 return string.Join(">", this.Select(category => category.GetString()));
             }
+        }
 
+        public static bool sortItemGrid(ItemGrid itemGrid)
+        {
+            MelonLogger.Msg("sortItemGrid");
+            MelonLogger.Msg("currentCalcDelegate: " + currentCalcDelegate);
+            Dictionary<ulong, List<Item>> ItemRank = new();
 
-            /* This can be done with compile time performance with DynamicMethod and OpCodes
-             * TODO: Implement
-             *
-             */
-            private ulong getRank(Item item)
+            foreach (Item item in GetItemsWithNulls(itemGrid))
             {
-                ulong rank = 0b_0000000000000000000000000000000000000000000000000000000000000000;
-                if (item == null) return rank;
-
-                ulong mask = 0b_1000000000000000000000000000000000000000000000000000000000000000;
-                int bitsLeft = 64;
-
-                foreach (Category category in this)
-                    switch (category)
-                    {
-                        case Category.UNIQUENESS:
-                            if (item.IsUnique) rank |= mask;
-                            mask >>= 1;
-                            bitsLeft -= 1;
-                            break;
-                        case Category.RARITY:
-                            rank |= mask >> ((int)ItemRarity._Count - (int)item.Rarity);
-                            mask >>= (int)ItemRarity._Count;
-                            bitsLeft -= (int)ItemRarity._Count;
-                            break;
-                        case Category.TIER:
-                            rank |= mask >> (TierId.Count - item.Tier.Id);
-                            mask >>= TierId.Count;
-                            bitsLeft -= TierId.Count;
-                            break;
-                        case Category.TYPE:
-                            rank |= mask >> (int)item.Type;
-                            mask >>= (int)ItemType._Count;
-                            bitsLeft -= (int)ItemType._Count;
-
-                            bitsLeft -= 26;
-                            foreach (int c in item.SubtypeCode)
-                                switch (c)
-                                {
-                                    case >= 65 when c <= 65 + bitsLeft:
-                                        rank ^= mask >> (c - 65);
-                                        break;
-                                    case > 96 and < 123:
-                                        rank ^= mask >> (c - 97 + bitsLeft);
-                                        break;
-                                }
-
-                            break;
-                        case Category.NULL:
-                        default:
-                            break;
-                    }
-
-                return rank;
+                ulong rank = 0;
+                if (item != null)
+                {
+                    rank = currentCalcDelegate(item.IsUnique, (int)item.Rarity, item.Tier.Id, (int)item.Type,
+                        item.SubtypeCode);
+                }
+                if (!ItemRank.ContainsKey(rank)) ItemRank[rank] = new List<Item>();
+                ItemRank[rank].Add(item);
             }
 
-            public bool sortItemGrid(ItemGrid itemGrid)
+            ulong[] A = new List<ulong>(ItemRank.Keys).ToArray();
+            if (A.Length < 2) return false;
+            ulong[] A_copy = new ulong[A.Length]; // original 
+            Array.Copy(A, A_copy, A.Length);
+            SortArrayInPlace(A, 0, A.Length - 1);
+            Array.Reverse(A);
+            // Check if sorting is required
+            if (!A.Where((t, j) => t != A_copy[j]).Any()) return false;
+
+            itemGrid.Clear();
+            int i = 0;
+            foreach (ulong rank in A)
+            foreach (Item item in ItemRank[rank])
             {
-                Dictionary<ulong, List<Item>> ItemRank = new();
-
-                foreach (Item item in GetItemsWithNulls(itemGrid))
-                {
-                    ulong rank = getRank(item);
-                    // ulong rank = generateRankingFunc()(item);
-                    if (!ItemRank.ContainsKey(rank)) ItemRank[rank] = new List<Item>();
-                    ItemRank[rank].Add(item);
-                }
-
-                ulong[] A = new List<ulong>(ItemRank.Keys).ToArray();
-                if (A.Length < 2) return false;
-                ulong[] A_copy = new ulong[A.Length]; // original 
-                Array.Copy(A, A_copy, A.Length);
-                SortArrayInPlace(A, 0, A.Length - 1);
-                Array.Reverse(A);
-                // Check if sorting is required
-                if (!A.Where((t, j) => t != A_copy[j]).Any()) return false;
-
-                itemGrid.Clear();
-                int i = 0;
-                foreach (ulong rank in A)
-                foreach (Item item in ItemRank[rank])
-                {
-                    int y = i / itemGrid.Width;
-                    int x = i % itemGrid.Width;
-                    itemGrid.Set(x, y, item);
-                    i++;
-                }
-
-                return true;
+                int y = i / itemGrid.Width;
+                int x = i % itemGrid.Width;
+                itemGrid.Set(x, y, item);
+                i++;
             }
+
+            return true;
         }
     }
 
