@@ -5,7 +5,6 @@ namespace MQOD
 {
     public class Archive
     {
-
         public class Ordering : List<Sort.Category>
         {
             private ulong getRank(Item item)

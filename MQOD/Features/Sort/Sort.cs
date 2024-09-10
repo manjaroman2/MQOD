@@ -6,26 +6,12 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Death.Items;
 using HarmonyLib;
-using MelonLoader;
 
 namespace MQOD
 {
     public static class Sort
     {
-        public static readonly MethodInfo String__GetChars =
-            typeof(string).GetProperty("Chars", new[] { typeof(int) })!.GetGetMethod();
-
-        public static readonly MethodInfo String__GetLength =
-            typeof(string).GetProperty(nameof(string.Length))!.GetGetMethod();
-
-        public static CalcDelegate currentCalcDelegate;
-
-        private const bool doNop = false;
-        private const int uniqueArg = 0;
-        private const int rarityArg = 1;
-        private const int tierIdArg = 2;
-        private const int typeArg = 3;
-        private const int subtypeCodeArg = 4;
+        public delegate ulong CalcDelegate(bool IsUnique, int Rarity, int Tier, int Type, string SubType);
 
         public enum Category
         {
@@ -36,14 +22,26 @@ namespace MQOD
             NULL
         }
 
-        private static readonly FieldInfo ItemGridSlotsAccessor = typeof(ItemGrid).GetField("_slots", AccessTools.all);
+        private const int uniqueArg = 0;
+        private const int rarityArg = 1;
+        private const int tierIdArg = 2;
+        private const int typeArg = 3;
+        private const int subtypeCodeArg = 4;
 
-        public delegate ulong CalcDelegate(bool IsUnique, int Rarity, int Tier, int Type, string SubType);
+        public static readonly MethodInfo String__GetChars =
+            typeof(string).GetProperty("Chars", new[] { typeof(int) })!.GetGetMethod();
+
+        public static readonly MethodInfo String__GetLength =
+            typeof(string).GetProperty(nameof(string.Length))!.GetGetMethod();
+
+        public static CalcDelegate currentCalcDelegate;
+
+        private static readonly FieldInfo ItemGridSlotsAccessor = typeof(ItemGrid).GetField("_slots", AccessTools.all);
 
         public static CalcDelegate GenerateCalcDelegate(Ordering ordering)
         {
-            MelonLogger.Msg("Generating new CalcDelegate");
-            DynamicMethod dynamicMethod = new DynamicMethod(
+            // MelonLogger.Msg("Generating new CalcDelegate");
+            DynamicMethod dynamicMethod = new(
                 "calcIL", typeof(ulong), new[] { typeof(bool), typeof(int), typeof(int), typeof(int), typeof(string) });
 
             ILGenerator il = dynamicMethod.GetILGenerator(512);
@@ -74,7 +72,6 @@ namespace MQOD
                 il.Emit(OpCodes.Ldc_I4_S, 64);
                 il.Emit(OpCodes.Stloc, bitsLeft.LocalIndex);
                 foreach (Category category in ordering)
-                {
                     switch (category)
                     {
                         case Category.UNIQUENESS:
@@ -105,12 +102,6 @@ namespace MQOD
                             il.Emit(OpCodes.Ldc_I4, (int)ItemRarity._Count);
                             il.Emit(OpCodes.Ldarg, rarityArg);
                             il.Emit(OpCodes.Sub);
-                            if (doNop)
-                            {
-                                il.Emit(OpCodes.Ldc_I4_S, 63); // The compiler puts these NOPs before ShrUn... Why? 
-                                il.Emit(OpCodes.And);
-                            }
-
                             il.Emit(OpCodes.Shr_Un);
                             il.Emit(OpCodes.Or);
                             il.Emit(OpCodes.Stloc, rank.LocalIndex);
@@ -132,12 +123,6 @@ namespace MQOD
                             il.Emit(OpCodes.Ldc_I4, TierId.Count);
                             il.Emit(OpCodes.Ldarg, tierIdArg);
                             il.Emit(OpCodes.Sub);
-                            if (doNop)
-                            {
-                                il.Emit(OpCodes.Ldc_I4_S, 63); // The compiler puts these NOPs before ShrUn... Why? 
-                                il.Emit(OpCodes.And);
-                            }
-
                             il.Emit(OpCodes.Shr_Un);
                             il.Emit(OpCodes.Or);
                             il.Emit(OpCodes.Stloc, rank.LocalIndex);
@@ -157,12 +142,6 @@ namespace MQOD
                             il.Emit(OpCodes.Ldloc, rank.LocalIndex);
                             il.Emit(OpCodes.Ldloc, mask.LocalIndex);
                             il.Emit(OpCodes.Ldarg, typeArg);
-                            if (doNop)
-                            {
-                                il.Emit(OpCodes.Ldc_I4_S, 63); // The compiler puts these NOPs before ShrUn... Why? 
-                                il.Emit(OpCodes.And);
-                            }
-
                             il.Emit(OpCodes.Shr_Un);
                             il.Emit(OpCodes.Or);
                             il.Emit(OpCodes.Stloc, rank.LocalIndex);
@@ -227,12 +206,6 @@ namespace MQOD
                             il.Emit(OpCodes.Ldloc_S, someInt5.LocalIndex);
                             il.Emit(OpCodes.Ldc_I4_S, 65);
                             il.Emit(OpCodes.Sub);
-                            if (doNop)
-                            {
-                                il.Emit(OpCodes.Ldc_I4_S, 63); // The compiler puts these NOPs before ShrUn... Why? 
-                                il.Emit(OpCodes.And);
-                            }
-
                             il.Emit(OpCodes.Shr_Un);
                             il.Emit(OpCodes.Xor);
                             il.Emit(OpCodes.Stloc, rank.LocalIndex);
@@ -246,12 +219,6 @@ namespace MQOD
                             il.Emit(OpCodes.Sub);
                             il.Emit(OpCodes.Ldloc, bitsLeft.LocalIndex);
                             il.Emit(OpCodes.Add);
-                            if (doNop)
-                            {
-                                il.Emit(OpCodes.Ldc_I4_S, 63); // The compiler puts these NOPs before ShrUn... Why? 
-                                il.Emit(OpCodes.And);
-                            }
-
                             il.Emit(OpCodes.Shr_Un);
                             il.Emit(OpCodes.Xor);
                             il.Emit(OpCodes.Stloc, rank.LocalIndex);
@@ -274,7 +241,6 @@ namespace MQOD
                         default:
                             throw new ArgumentOutOfRangeException();
                     }
-                }
 
                 il.Emit(OpCodes.Ldloc, rank.LocalIndex);
                 il.Emit(OpCodes.Ret);
@@ -334,42 +300,16 @@ namespace MQOD
                     yield return null;
         }
 
-        public class Ordering : List<Category>
-        {
-            public static readonly Ordering DEFAULT = _DEFAULT;
-
-            public Ordering()
-            {
-            }
-
-            public Ordering(int n)
-            {
-                for (int i = 0; i < n; i++) Add(Category.NULL);
-            }
-
-            private static Ordering _DEFAULT => new()
-                { Category.UNIQUENESS, Category.RARITY, Category.TIER, Category.TYPE };
-
-            public override string ToString()
-            {
-                return string.Join(">", this.Select(category => category.GetString()));
-            }
-        }
-
         public static bool sortItemGrid(ItemGrid itemGrid)
         {
-            MelonLogger.Msg("sortItemGrid");
-            MelonLogger.Msg("currentCalcDelegate: " + currentCalcDelegate);
             Dictionary<ulong, List<Item>> ItemRank = new();
 
             foreach (Item item in GetItemsWithNulls(itemGrid))
             {
                 ulong rank = 0;
                 if (item != null)
-                {
                     rank = currentCalcDelegate(item.IsUnique, (int)item.Rarity, item.Tier.Id, (int)item.Type,
                         item.SubtypeCode);
-                }
                 if (!ItemRank.ContainsKey(rank)) ItemRank[rank] = new List<Item>();
                 ItemRank[rank].Add(item);
             }
@@ -395,6 +335,28 @@ namespace MQOD
             }
 
             return true;
+        }
+
+        public class Ordering : List<Category>
+        {
+            public static readonly Ordering DEFAULT = _DEFAULT;
+
+            public Ordering()
+            {
+            }
+
+            public Ordering(int n)
+            {
+                for (int i = 0; i < n; i++) Add(Category.NULL);
+            }
+
+            private static Ordering _DEFAULT => new()
+                { Category.UNIQUENESS, Category.RARITY, Category.TIER, Category.TYPE };
+
+            public override string ToString()
+            {
+                return string.Join(">", this.Select(category => category.GetString()));
+            }
         }
     }
 

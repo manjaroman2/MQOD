@@ -21,10 +21,7 @@ namespace MQOD
             TomletMain.RegisterMapper(ordering =>
             {
                 TomlArray tomlArray = new();
-                foreach (Sort.Category category in ordering)
-                {
-                    tomlArray.Add(category);
-                }
+                foreach (Sort.Category category in ordering) tomlArray.Add(category);
 
                 return tomlArray;
             }, value =>
@@ -37,6 +34,7 @@ namespace MQOD
                     MelonLogger.Warning("Sort Ordering parsing failed! Resorting to default.");
                     return Sort.Ordering.DEFAULT;
                 }
+
                 Sort.Ordering ordering = new();
                 ordering.AddRange(tomlArray.Select(tomlValue =>
                     (Sort.Category)Enum.Parse(typeof(Sort.Category), tomlValue.StringValue)));

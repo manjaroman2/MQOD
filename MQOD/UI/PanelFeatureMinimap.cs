@@ -5,14 +5,6 @@ namespace MQOD
 {
     public class PanelFeatureMinimap : PanelBaseMQOD
     {
-        
-        public char this[int index]
-        {
-            get
-            {
-                return 'c';
-            }
-        }
         public readonly MelonPreferences_Entry<KeyCode?> minimapFullscreenKeyEntry;
         public readonly MelonPreferences_Entry<float> minimapTransparencyEntry;
         public readonly MelonPreferences_Entry<bool> minimapZoomFunctionEntry;
@@ -27,6 +19,8 @@ namespace MQOD
             minimapZoomFunctionEntry = prefManager.addSettingsEntry("minimapZoomFunctionEntry", false);
             minimapTransparencyEntry = prefManager.addSettingsEntry("minimapTransparencyEntry", 0.3f);
         }
+
+        public char this[int index] => 'c';
 
         public override string Name => "MQOD - Minimap";
         public override int MinWidth => 300;

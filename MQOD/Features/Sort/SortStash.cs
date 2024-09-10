@@ -26,9 +26,7 @@ namespace MQOD
                 return;
             }
 
-            if (Sort.sortItemGrid(StashItemController.SelectedPage))
-                MelonLogger.Msg("Sorting Page=" + StashItemController.SelectedPage);
-            else
+            if (!Sort.sortItemGrid(StashItemController.SelectedPage))
                 MelonLogger.Msg("Nothing to sort :)");
         }
         /*

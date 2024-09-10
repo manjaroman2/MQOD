@@ -1,6 +1,4 @@
-using System;
 using Death.App;
-using Death.Items;
 using Death.Run.UserInterface.Items;
 using MelonLoader;
 
@@ -27,8 +25,8 @@ namespace MQOD
             }
 
             MelonLogger.Msg(Sort.sortItemGrid(MQOD.Instance.SortShopInst.ShopItemController.GetSelectedPageGrid())
-                    ? $"Sorted Shop {MQOD.Instance.SortShopInst.ShopItemController.SelectedPage}"
-                    : "There was nothing to sort :)");
+                ? $"Sorted Shop {MQOD.Instance.SortShopInst.ShopItemController.SelectedPage}"
+                : "There was nothing to sort :)");
         }
 
 
