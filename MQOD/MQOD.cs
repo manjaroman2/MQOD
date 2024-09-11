@@ -21,7 +21,9 @@ namespace MQOD
         public GemRadiusVisualizer GemRadiusVisualizerInst;
 
         protected bool isRun;
+        public MouseEffects MouseEffectsInst;
         public ScreenManager ScreenManager;
+        public ShopReroll ShopRerollInst;
 
         public SortArmory SortArmoryInst;
         public SortItemGrid SortItemGridInst;
@@ -41,7 +43,7 @@ namespace MQOD
 
         public override void OnInitializeMelon()
         {
-            MelonLogger.Msg("Hello from MoreQOD.");
+            MelonLogger.Msg("Hello from MoreQOD!");
             _Instance = this;
 
             assetManager.init();
@@ -55,6 +57,8 @@ namespace MQOD
             BetterMinimapInst = featureManager.addFeature<BetterMinimap>();
             GemRadiusVisualizerInst = featureManager.addFeature<GemRadiusVisualizer>();
             CameraZoomInst = featureManager.addFeature<CameraZoom>();
+            ShopRerollInst = featureManager.addFeature<ShopReroll>();
+            MouseEffectsInst = featureManager.addFeature<MouseEffects>();
 #if DEBUG
             featureManager.addFeature<AutoStart>();
 #endif
@@ -88,18 +92,17 @@ namespace MQOD
             LoggerInstance.Msg($"Scene {sceneName} with build index {buildIndex} has been loaded!");
         }
 
+
         public override void OnLateUpdate()
         {
             if (!UIInst.initialized) return;
+
+            if (MouseEffectsInst is { initialized: true })
+                MouseEffectsInst.calcRotation(new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")));
+
             if (UIInst.keyReassignTimer.Enabled) return; // Handle keycodes
 
-
             // if (Input.GetKeyDown(KeyCode.L)) Player.Instance.Entity.Invulnerable.AddStack();
-            // if (Input.GetKeyDown(KeyCode.L))
-            // {
-            //     BetterMinimapInst.setChunkViewRange(BetterMinimapInst.getChunkViewRange() + 1);
-            //     MelonLogger.Msg("New BetterMinimapInst.getChunkViewRange() " + BetterMinimapInst.getChunkViewRange());
-            // }
 
             if (UIInst.FeatureMinimap.minimapFullscreenKeyEntry.Value != null)
             {
@@ -176,6 +179,10 @@ namespace MQOD
             if (UIInst.FeatureGemVisualizer.gemRadiusVisualizerToggleKeyEntry.Value != null &&
                 Input.GetKeyDown((KeyCode)UIInst.FeatureGemVisualizer.gemRadiusVisualizerToggleKeyEntry.Value))
                 GemRadiusVisualizerInst.toggle();
+
+            if (UIInst.FeatureMouseEffects.ToggleHotkey.Value != null &&
+                Input.GetKeyDown((KeyCode)UIInst.FeatureMouseEffects.ToggleHotkey.Value))
+                UIInst.FeatureMouseEffects.toggle();
 
             if (UIInst.Main.toggleUIKeyEntry.Value != null && UIInst.initialized && !UIInst.keyReassignTimer.Enabled &&
                 Input.GetKeyDown((KeyCode)UIInst.Main.toggleUIKeyEntry.Value))

@@ -5,6 +5,8 @@ namespace MQOD
 {
     public class GemRadiusCreator : MonoBehaviour
     {
+        private static readonly int _ColorProp = Shader.PropertyToID("_Color");
+        private static readonly int _WidthProp = Shader.PropertyToID("_Width");
         public GameObject quad;
         private float _Scale;
 
@@ -64,11 +66,11 @@ namespace MQOD
             material = new Material(GemRadiusShader);
             updateWidth(MQOD.Instance.UIInst.FeatureGemVisualizer.widthModifierEntry.Value);
 
-            material.SetColor("_Color",
+            material.SetColor(_ColorProp,
                 PanelBaseMQOD.FlatToColor(MQOD.Instance.UIInst.FeatureGemVisualizer.gemRadiusColorFloatEntry.Value));
 
             MQOD.Instance.UIInst.FeatureGemVisualizer.gemRadiusColorFloatEntry.OnEntryValueChanged.Subscribe(
-                (_, newVal) => { material.SetColor("_Color", PanelBaseMQOD.FlatToColor(newVal)); });
+                (_, newVal) => { material.SetColor(_ColorProp, PanelBaseMQOD.FlatToColor(newVal)); });
 
             if (quad != null) quad.GetComponent<Renderer>().material = material;
         }
@@ -87,7 +89,7 @@ namespace MQOD
 
         private void setWidth()
         {
-            if (material != null) material.SetFloat("_Width", _Width);
+            if (material != null) material.SetFloat(_WidthProp, _Width);
         }
 
 

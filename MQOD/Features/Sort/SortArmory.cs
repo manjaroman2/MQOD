@@ -8,17 +8,15 @@ namespace MQOD
     {
         public ItemController_Armory ItemControllerArmory;
 
+        public void sort()
+        {
+            if (!Sort.sortItemGrid(ItemControllerArmory.ArmoryGrid)) MelonLogger.Msg("There is nothing to sort :)");
+        }
+
         protected override void addHarmonyHooks()
         {
             HarmonyHelper.Patch(typeof(GUI_Items_Armory), nameof(GUI_Items_Armory.Init), new[] { typeof(Profile) },
                 postfixClazz: typeof(SortArmory), postfixMethod: nameof(GUI_Items_Armory__Init__Postfix));
-        }
-
-        public void sort()
-        {
-            MelonLogger.Msg(Sort.sortItemGrid(ItemControllerArmory.ArmoryGrid)
-                ? "Sorted Armory"
-                : "There is nothing to sort :)");
         }
 
 

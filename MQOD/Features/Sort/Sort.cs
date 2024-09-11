@@ -247,22 +247,6 @@ namespace MQOD
             }
         }
 
-        // public static void Save()
-        // {
-        //     AssemblyName assemblyName = new AssemblyName("testAssembly");
-        //     AssemblyBuilder assemblyBuilder =
-        //         AssemblyBuilder.DefineDynamicAssembly(assemblyName, AssemblyBuilderAccess.RunAndSave);
-        //     ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule("testModule", "testAssembly.dll");
-        //     TypeBuilder typeBuilder =
-        //         moduleBuilder.DefineType("TestClass", TypeAttributes.Public | TypeAttributes.Class);
-        //     MethodBuilder methodBuilder =
-        //         typeBuilder.DefineMethod("calcIL", MethodAttributes.Public | MethodAttributes.Static);
-        //     ILGenerator il = methodBuilder.GetILGenerator(512);
-        //     buildCalcIL(il);
-        //     typeBuilder.CreateType();
-        //     assemblyBuilder.Save("testAssembly.dll");
-        // }
-
         public static void SortArrayInPlace(ulong[] array, int leftIndex, int rightIndex) // QuickSort 
         {
             int i = leftIndex;

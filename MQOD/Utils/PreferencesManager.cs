@@ -58,8 +58,6 @@ namespace MQOD
             entry.OnEntryValueChanged.Subscribe((oldKeyCode, newKeyCode) =>
             {
                 MelonLogger.Msg($"{identifier} {oldKeyCode}=>{newKeyCode}");
-                // MelonLogger.Msg(
-                //     $"{string.Join(",", activeKeybinds.ToList().ConvertAll(input => input.ToString()).ToArray())}");
                 if (newKeyCode == null) return;
                 if (newKeyCode == KeyCode.Escape)
                 {
@@ -68,9 +66,8 @@ namespace MQOD
                     return;
                 }
 
-                if (!activeKeybinds.Contains((KeyCode)newKeyCode))
+                if (activeKeybinds.Add((KeyCode)newKeyCode))
                 {
-                    activeKeybinds.Add((KeyCode)newKeyCode);
                     if (oldKeyCode != null) activeKeybinds.Remove((KeyCode)oldKeyCode);
                 }
                 else if (!flag)
@@ -83,20 +80,6 @@ namespace MQOD
                 {
                     activeKeybinds.Add((KeyCode)newKeyCode);
                 }
-                // else if (newKeyCode != oldKeyCode) 
-                // {
-                //     if (!flag)
-                //     {
-                //         MelonLogger.Warning($"Double assignment of key {newKeyCode}!") ;
-                //         flag = true;
-                //     }
-                //     entry.Value = oldKeyCode;
-                //     
-                // }
-                // else
-                // {
-                //     activeKeybinds.Remove((KeyCode)oldKeyCode);
-                // }
             });
             Entries.Add(entry);
             return entry;

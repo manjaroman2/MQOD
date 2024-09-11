@@ -9,18 +9,6 @@ namespace MQOD
         private float defaultZoom;
         private int zoomState = 1;
 
-        protected override void addHarmonyHooks()
-        {
-            HarmonyHelper.Patch(typeof(RunCamera), "Start", postfixClazz: typeof(CameraZoom),
-                postfixMethod: nameof(RunCamera__Start__Postfix));
-        }
-
-        protected void init()
-        {
-            defaultZoom = RunCamera.Instance.OrthographicSize;
-            initialized = true;
-        }
-
         public void zoomOut()
         {
             if (!initialized) return;
@@ -34,6 +22,18 @@ namespace MQOD
                 RunCamera.Instance.OrthographicSize = defaultZoom;
                 zoomState = 1;
             }
+        }
+
+        protected override void addHarmonyHooks()
+        {
+            HarmonyHelper.Patch(typeof(RunCamera), "Start", postfixClazz: typeof(CameraZoom),
+                postfixMethod: nameof(RunCamera__Start__Postfix));
+        }
+
+        protected void init()
+        {
+            defaultZoom = RunCamera.Instance.OrthographicSize;
+            initialized = true;
         }
 
         private static void RunCamera__Start__Postfix()

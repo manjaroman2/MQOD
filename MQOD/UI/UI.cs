@@ -11,18 +11,13 @@ namespace MQOD
     public class UI
     {
         private const float startupDelay = 0f;
-
-        public readonly Timer keyReassignTimer = new(1000)
-        {
-            AutoReset = false
-        };
-
+        public readonly Timer keyReassignTimer = new(1000) { AutoReset = false };
         public PanelFeatureCamera FeatureCamera;
         public PanelFeatureGemVisualizer FeatureGemVisualizer;
         public PanelFeatureMinimap FeatureMinimap;
+        public PanelMouseEffects FeatureMouseEffects;
         public PanelFeatureSort FeatureSort;
         public bool initialized;
-
         public bool isAssigning = false;
         public PanelMain Main;
         public UIBaseMQOD UIBase;
@@ -54,6 +49,7 @@ namespace MQOD
             FeatureGemVisualizer = new PanelFeatureGemVisualizer(UIBase) { Enabled = false };
             FeatureMinimap = new PanelFeatureMinimap(UIBase) { Enabled = false };
             FeatureCamera = new PanelFeatureCamera(UIBase) { Enabled = false };
+            FeatureMouseEffects = new PanelMouseEffects(UIBase) { Enabled = false };
             Main = new PanelMain(UIBase);
 
             CanvasScaler canvasScaler = UIBase.Canvas.gameObject.GetComponent<CanvasScaler>();

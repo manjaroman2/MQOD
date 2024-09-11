@@ -8,11 +8,6 @@ namespace MQOD
     {
         private bool enabled = true;
 
-        protected override void addHarmonyHooks()
-        {
-            if (enabled) enableSorting();
-        }
-
         public bool isEnabled()
         {
             return enabled;
@@ -22,6 +17,11 @@ namespace MQOD
         {
             enabled = !enabled;
             applySorting();
+        }
+
+        protected override void addHarmonyHooks()
+        {
+            if (enabled) enableSorting();
         }
 
         private void applySorting()
@@ -45,9 +45,6 @@ namespace MQOD
         private static void ItemGrid__Populate__Postfix(IEnumerable<Item> items, ref ItemGrid __instance)
         {
             Sort.sortItemGrid(__instance);
-            // MelonLogger.Msg(MQOD.Instance.UI.FeatureSort.SortOrdering.sortItemGrid(__instance)
-            //     ? "Sorted item grid"
-            //     : "Nothing to sort :)");
         }
     }
 }

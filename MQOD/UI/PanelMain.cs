@@ -27,6 +27,7 @@ namespace MQOD
 
             createPanelSwitch("Gem Visualizer", MQOD.Instance.UIInst.FeatureGemVisualizer);
             createPanelSwitch("Camera Zoom", MQOD.Instance.UIInst.FeatureCamera);
+            createPanelSwitch("Mouse Effects", MQOD.Instance.UIInst.FeatureMouseEffects);
             base.LateConstructUI();
         }
     }

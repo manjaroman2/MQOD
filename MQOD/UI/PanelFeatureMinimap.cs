@@ -20,8 +20,6 @@ namespace MQOD
             minimapTransparencyEntry = prefManager.addSettingsEntry("minimapTransparencyEntry", 0.3f);
         }
 
-        public char this[int index] => 'c';
-
         public override string Name => "MQOD - Minimap";
         public override int MinWidth => 300;
         public override int MinHeight => 300;

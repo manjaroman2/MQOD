@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using System.Threading;
 using Death.Data;
 using Death.ResourceManagement;
 using Death.Run.UserInterface.HUD.Minimap;
@@ -18,7 +17,6 @@ namespace MQOD
     {
         private const int MaxZoomState = 5;
 
-
         private static readonly FieldInfo chunkViewRangeAccessor =
             AccessTools.Field(typeof(WorldGenConfig), "_chunkViewRange");
 
@@ -29,12 +27,12 @@ namespace MQOD
         private readonly FieldInfo boundsWidthAccessor = AccessTools.Field(typeof(GUI_Minimap), "_boundsWidth");
         public Image boundsImage;
         public Color boundsImage_color;
+
         private RectTransform boundsImageRectTransform;
         private Vector2 boundsImageRectTransform_pivot;
         private Vector2 boundsImageRectTransform_sizeDelta;
         private float boundsWidthAccessor_GetValue;
         private GUI_Minimap.Config config;
-        public CoordUtils Coords;
         private float default_config_MapDimensionUnits;
         private GUI_Minimap guiMinimap;
         private GameObject Img_Frame;
@@ -42,11 +40,9 @@ namespace MQOD
         private float mapDimensionUnitsState;
         private RectTransform rectTransform;
         private Vector2 rectTransform_anchorMax;
-
         private Vector2 rectTransform_anchorMin;
         private Vector2 rectTransform_pivot;
         private int ZoomState;
-
         public Action<int> setChunkViewRange { get; private set; }
         public Func<int> getChunkViewRange { get; private set; }
 
@@ -88,14 +84,11 @@ namespace MQOD
             }
 
             if (ZoomState >= MaxZoomState) return;
-            MelonLogger.Msg("ZoomOut");
             setChunkViewRange(getChunkViewRange() + 1);
             mapDimensionUnitsState += 30;
             if (IsFullscreen)
                 config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits) * 4f;
             else config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits);
-            MelonLogger.Msg("MapDimensionUnits: " + config.MapDimensionUnits);
-
             ZoomState++;
         }
 
@@ -108,14 +101,11 @@ namespace MQOD
             }
 
             if (ZoomState <= 0) return;
-            MelonLogger.Msg("ZoomIn");
             setChunkViewRange(getChunkViewRange() - 1);
             mapDimensionUnitsState -= 30;
             if (IsFullscreen)
                 config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits) * 4f;
             else config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits);
-            MelonLogger.Msg("MapDimensionUnits: " + config.MapDimensionUnits);
-
             ZoomState--;
         }
 
@@ -152,7 +142,6 @@ namespace MQOD
                 MQOD.Instance.UIInst.FeatureMinimap.minimapTransparencyEntry.Value);
 
             config.MapDimensionUnits = Math.Max(mapDimensionUnitsState, default_config_MapDimensionUnits) * 4f;
-            MelonLogger.Msg("MapDimensionUnits: " + config.MapDimensionUnits);
             IsFullscreen = true;
         }
 
@@ -168,7 +157,6 @@ namespace MQOD
             boundsWidthAccessor.SetValue(guiMinimap, boundsWidthAccessor_GetValue);
             boundsImage.color = boundsImage_color;
             config.MapDimensionUnits = default_config_MapDimensionUnits;
-            MelonLogger.Msg("MapDimensionUnits: " + config.MapDimensionUnits);
             IsFullscreen = false;
         }
 
@@ -177,42 +165,13 @@ namespace MQOD
             HarmonyHelper.Patch(typeof(WorldGenerator), nameof(WorldGenerator.InitAsync),
                 new[] { typeof(WorldGenRecipe), typeof(Bounds2D) }, typeof(BetterMinimap),
                 nameof(Postfix__WorldGenerator__InitAsync));
-            HarmonyHelper.Patch(typeof(WorldGenerator), "RemoveChunk",
-                new[] { typeof(Vector2Int) }, typeof(BetterMinimap),
-                nameof(Postfix__WorldGenerator__RemoveChunk));
-            HarmonyHelper.Patch(typeof(WorldGenerator), "GenerateChunkAsync",
-                new[] { typeof(Vector2Int), typeof(CancellationToken) }, typeof(BetterMinimap),
-                nameof(Postfix__WorldGenerator__GenerateChunkAsync));
-            HarmonyHelper.Patch(typeof(WorldGenerator), "UpdateVisibleChunksAsync",
-                new[] { typeof(Bounds2D), typeof(CancellationToken) }, typeof(BetterMinimap),
-                nameof(Postfix__WorldGenerator__UpdateVisibleChunksAsync));
         }
 
-        private static void Postfix__WorldGenerator__UpdateVisibleChunksAsync(
-            Bounds2D cameraWorldBounds,
-            CancellationToken token)
-        {
-            // MelonLogger.Msg($"============= Updating chunks =============");
-            // MelonLogger.Msg($"cameraWorldBounds {cameraWorldBounds}");
-            // MelonLogger.Msg(
-            //     $"cameraWorldBounds {MQOD.Instance.BetterMinimapInst.Coords.WorldToChunk(cameraWorldBounds.Center)}");
-        }
-
-        private static void Postfix__WorldGenerator__RemoveChunk(Vector2Int coords)
-        {
-            // MelonLogger.Msg($"Removing chunk at {coords}");
-        }
-
-        private static void Postfix__WorldGenerator__GenerateChunkAsync(Vector2Int coords, CancellationToken token)
-        {
-            // MelonLogger.Msg($"Generating chunk at {coords}");
-        }
 
         private static void Postfix__WorldGenerator__InitAsync(WorldGenerator __instance, WorldGenConfig ____config,
             WorldGenRecipe recipe, Bounds2D cameraWorldBounds)
         {
             Database.MapObjects.GetAllForAct(recipe.MapObjectAct);
-            MQOD.Instance.BetterMinimapInst.Coords = ____config.Coords;
             MQOD.Instance.BetterMinimapInst.getChunkViewRange = () => (int)chunkViewRangeAccessor.GetValue(____config);
             MQOD.Instance.BetterMinimapInst.setChunkViewRange = c =>
             {

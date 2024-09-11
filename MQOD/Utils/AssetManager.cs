@@ -19,11 +19,5 @@ namespace MQOD
                 foreach (string allAssetName in bundle.GetAllAssetNames())
                     MelonLogger.Msg(allAssetName + " " + bundle.LoadAsset(allAssetName).GetType());
         }
-
-        public Shader loadShader(string name)
-        {
-            Shader shader = bundle.LoadAsset<Shader>(name);
-            return shader;
-        }
     }
 }
