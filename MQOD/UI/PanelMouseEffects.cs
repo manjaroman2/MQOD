@@ -5,13 +5,13 @@ namespace MQOD
 {
     public class PanelMouseEffects : PanelBaseMQOD
     {
-        public readonly MelonPreferences_Entry<bool> Toggle;
+        public readonly MelonPreferences_Entry<bool> ToggleEntry;
         public readonly MelonPreferences_Entry<KeyCode?> ToggleHotkey;
 
         public PanelMouseEffects(UIBaseMQOD owner) : base(owner)
         {
             ToggleHotkey = prefManager.addHotkeyEntry("mouseEffectsToggleHotkey");
-            Toggle = prefManager.addSettingsEntry("mouseEffectsToggle", false);
+            ToggleEntry = prefManager.addSettingsEntry("mouseEffectsToggle", false);
         }
 
         public override string Name => "MQOD - Mouse Effects";
@@ -23,8 +23,8 @@ namespace MQOD
 
         public void toggle()
         {
-            Toggle.Value = !Toggle.Value;
-            MQOD.Instance.MouseEffectsInst.setState(Toggle.Value);
+            ToggleEntry.Value = !ToggleEntry.Value;
+            MQOD.Instance.MouseEffectsInst.setState(ToggleEntry.Value);
         }
 
         protected override void LateConstructUI()

@@ -58,7 +58,7 @@ namespace MQOD
             MQOD.Instance.MouseEffectsInst.MouseEffectsGameObject = gameObject;
             MQOD.Instance.MouseEffectsInst.mouseEffectsComponent.enabled = true;
             MQOD.Instance.MouseEffectsInst.MouseEffectsGameObject.SetActive(MQOD.Instance.UIInst.FeatureMouseEffects
-                .Toggle.Value);
+                .ToggleEntry.Value);
         }
 
         public class MouseEffectsComponent : MonoBehaviour
