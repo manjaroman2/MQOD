@@ -2,9 +2,11 @@ using System.IO;
 using System.Timers;
 using MelonLoader;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UniverseLib;
 using UniverseLib.Config;
+using UniverseLib.Input;
 
 namespace MQOD
 {
@@ -43,7 +45,7 @@ namespace MQOD
 
         private void OnInitialized()
         {
-            MelonLogger.Msg("UIMQOD OnInitialized");
+            MelonLogger.Msg("UniverseLib initialized");
             UIBase = new UIBaseMQOD("mj.MQOD", UiUpdate, MQOD.Instance.preferencesManager);
             FeatureSort = new PanelFeatureSort(UIBase) { Enabled = false };
             FeatureGemVisualizer = new PanelFeatureGemVisualizer(UIBase) { Enabled = false };

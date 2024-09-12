@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Reflection;
 using Claw.UserInterface.Screens;
 using Death;
 using Death.TimesRealm;
 using Death.TimesRealm.UserInterface;
 using Death.UserInterface;
+using HarmonyLib;
 using MelonLoader;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 namespace MQOD
 {
@@ -43,7 +47,9 @@ namespace MQOD
 
         public override void OnInitializeMelon()
         {
-            MelonLogger.Msg("Hello from MoreQOD!");
+            MelonLogger.Msg("OnInitializeMelon");
+            
+            
             _Instance = this;
 
             assetManager.init();
@@ -73,6 +79,24 @@ namespace MQOD
         {
             switch (sceneName)
             {
+                case "Scene_Core":
+                    // MelonLogger.Warning("inputsystem: " + EventSystem.current.currentInputModule);
+                    // MelonLogger.Msg(Game.NavigateAction.controls);
+                    foreach (PropertyInfo propertyInfo in typeof(Controls.UIActions).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                    {
+                        if (propertyInfo.PropertyType == typeof(InputAction) && propertyInfo.Name != "Scroll")
+                        {
+                            InputAction inputAction = (InputAction)propertyInfo.GetValue(Game.Controls.UI);
+                            MelonLogger.Msg("inputAction: " + inputAction);
+                            inputAction.performed += context =>
+                            {
+                                MelonLogger.Warning($"{context.action} performed!");
+                            }; 
+                            
+                        }
+                    }
+                    // Game.Controls.UI.Get().asset.bindings.GetEnumerator().Current.
+                    break;
                 case "Scene_Run":
                     isRun = true;
                     break;
@@ -92,13 +116,22 @@ namespace MQOD
             LoggerInstance.Msg($"Scene {sceneName} with build index {buildIndex} has been loaded!");
         }
 
+        public override void OnLateInitializeMelon()
+        {
+            MelonLogger.Msg("OnLateInitializeMelon");
+        }
+
 
         public override void OnLateUpdate()
         {
-            if (!UIInst.initialized) return;
+            if (!UIInst.initialized)
+            {
+                return;
+            }
 
-            if (MouseEffectsInst is { initialized: true })
-                MouseEffectsInst.calcRotation(new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")));
+            
+            // if (MouseEffectsInst is { initialized: true })
+            //     MouseEffectsInst.calcRotation(new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y")));
 
             if (UIInst.keyReassignTimer.Enabled) return; // Handle keycodes
 

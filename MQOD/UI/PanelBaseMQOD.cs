@@ -1,6 +1,8 @@
 using System;
+using Death.Utils;
 using MelonLoader;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UniverseLib.Input;
 using UniverseLib.UI;
@@ -79,20 +81,20 @@ namespace MQOD
             HotkeyLabel.fontSize = fontSize;
             // HotkeyLabel.color = Color.green;
             UIFactory.SetLayoutElement(HotkeyLabel.gameObject, 25, 25, 1);
-            ButtonRef Hotkey = UIFactory.CreateButton(row, $"{label}Hotkey",
+            ButtonRef Button_Hotkey = UIFactory.CreateButton(row, $"{label}Hotkey",
                 keyCodeGetter() == null ? "unassigned" : keyCodeGetter().ToString());
-            Hotkey.Component.GetComponentInChildren<Text>().fontSize = fontSize;
-            Hotkey.Component.navigation = new Navigation
+            Button_Hotkey.Component.GetComponentInChildren<Text>().fontSize = fontSize;
+            Button_Hotkey.Component.navigation = new Navigation
             {
-                mode = Navigation.Mode.None
+                mode = Navigation.Mode.Automatic
             };
-            UIFactory.SetLayoutElement(Hotkey.GameObject, 125, 25, 0);
-            Hotkey.OnClick += () =>
+            UIFactory.SetLayoutElement(Button_Hotkey.GameObject, 125, 25, 0);
+            Button_Hotkey.OnClick += () =>
             {
                 if (MQOD.Instance.UIInst.isAssigning) return;
                 MQOD.Instance.UIInst.isAssigning = true;
                 InputManager.BeginRebind(OnSelection, OnFinished);
-                Hotkey.ButtonText.text = "<Press any key>";
+                Button_Hotkey.ButtonText.text = "<Press any key>";
             };
             return HotkeyLabel;
 
@@ -105,7 +107,7 @@ namespace MQOD
             void OnFinished(KeyCode? bound)
             {
                 keyCodeSetter(bound);
-                Hotkey.ButtonText.text = keyCodeGetter() == null ? "unassigned" : keyCodeGetter().ToString();
+                Button_Hotkey.ButtonText.text = keyCodeGetter() == null ? "unassigned" : keyCodeGetter().ToString();
                 MQOD.Instance.UIInst.isAssigning = false;
             }
         }
@@ -118,26 +120,28 @@ namespace MQOD
         protected void createHotkeyToggle(Func<KeyCode?> keyCodeGetter,
             Action<KeyCode?> keyCodeSetter, out Action<Color> setColor)
         {
+            
+            
             GameObject row = CreateRow();
             setColor = color => { row.GetComponent<Image>().color = color; };
             Text HotkeyLabel = UIFactory.CreateLabel(row, "Toggle", "Toggle");
             HotkeyLabel.fontSize = fontSize;
             // HotkeyLabel.color = Color.green;
             UIFactory.SetLayoutElement(HotkeyLabel.gameObject, 25, 25, 1);
-            ButtonRef Hotkey = UIFactory.CreateButton(row, "ToggleHotkey",
+            ButtonRef Button_Hotkey = UIFactory.CreateButton(row, "ToggleHotkey",
                 keyCodeGetter() == null ? "unassigned" : keyCodeGetter().ToString());
-            Hotkey.Component.GetComponentInChildren<Text>().fontSize = fontSize;
-            Hotkey.Component.navigation = new Navigation
+            Button_Hotkey.Component.GetComponentInChildren<Text>().fontSize = fontSize;
+            Button_Hotkey.Component.navigation = new Navigation
             {
-                mode = Navigation.Mode.None
+                mode = Navigation.Mode.Automatic
             };
-            UIFactory.SetLayoutElement(Hotkey.GameObject, 125, 25, 0);
-            Hotkey.OnClick += () =>
+            UIFactory.SetLayoutElement(Button_Hotkey.GameObject, 125, 25, 0);
+            Button_Hotkey.OnClick += () =>
             {
                 if (MQOD.Instance.UIInst.isAssigning) return;
                 MQOD.Instance.UIInst.isAssigning = true;
                 InputManager.BeginRebind(OnSelection, OnFinished);
-                Hotkey.ButtonText.text = "<Press any key>";
+                Button_Hotkey.ButtonText.text = "<Press any key>";
             };
             return;
 
@@ -150,7 +154,7 @@ namespace MQOD
             void OnFinished(KeyCode? bound)
             {
                 keyCodeSetter(bound);
-                Hotkey.ButtonText.text = keyCodeGetter() == null ? "unassigned" : keyCodeGetter().ToString();
+                Button_Hotkey.ButtonText.text = keyCodeGetter() == null ? "unassigned" : keyCodeGetter().ToString();
                 MQOD.Instance.UIInst.isAssigning = false;
             }
         }
@@ -163,17 +167,17 @@ namespace MQOD
             SwitchLabel.fontSize = fontSize;
             SwitchLabel.color = stateGetter() ? colorState1 : colorState2;
             UIFactory.SetLayoutElement(SwitchLabel.gameObject, 25, 25, 1);
-            ButtonRef Switch = UIFactory.CreateButton(row, $"{switchLabel}Switch", stateString());
-            UIFactory.SetLayoutElement(Switch.GameObject, 100, 25, 0);
-            Switch.Component.GetComponentInChildren<Text>().fontSize = fontSize;
-            Switch.Component.navigation = new Navigation
+            ButtonRef Button_Switch = UIFactory.CreateButton(row, $"{switchLabel}Switch", stateString());
+            UIFactory.SetLayoutElement(Button_Switch.GameObject, 100, 25, 0);
+            Button_Switch.Component.GetComponentInChildren<Text>().fontSize = fontSize;
+            Button_Switch.Component.navigation = new Navigation
             {
-                mode = Navigation.Mode.None
+                mode = Navigation.Mode.Automatic
             };
-            Switch.OnClick += () =>
+            Button_Switch.OnClick += () =>
             {
                 stateToggle();
-                Switch.ButtonText.text = stateString();
+                Button_Switch.ButtonText.text = stateString();
                 SwitchLabel.color = stateGetter() ? colorState1 : colorState2;
             };
         }
@@ -193,17 +197,17 @@ namespace MQOD
             SwitchLabel.fontSize = fontSize;
             SwitchLabel.color = (Color)(panelExpandedEntry.Value ? colorState1 : colorState2);
             UIFactory.SetLayoutElement(SwitchLabel.gameObject, 25, 25, 1);
-            ButtonRef Switch = UIFactory.CreateButton(row, $"{switchLabel}PanelSwitch",
+            ButtonRef Button_Switch = UIFactory.CreateButton(row, $"{switchLabel}PanelSwitch",
                 panelExpandedEntry.Value ? "Expanded" : "Hidden");
-            UIFactory.SetLayoutElement(Switch.GameObject, 100, 25, 0);
-            Switch.Component.GetComponentInChildren<Text>().fontSize = fontSize;
-            Switch.Component.navigation = new Navigation
+            UIFactory.SetLayoutElement(Button_Switch.GameObject, 100, 25, 0);
+            Button_Switch.Component.GetComponentInChildren<Text>().fontSize = fontSize;
+            Button_Switch.Component.navigation = new Navigation
             {
-                mode = Navigation.Mode.None
+                mode = Navigation.Mode.Automatic,
+                wrapAround = true,
             };
-
-            panelExpandedEntry.OnEntryValueChanged.Subscribe((oldState, newState) => { applyState(); });
-            Switch.OnClick += () => { panelExpandedEntry.Value = !panelExpandedEntry.Value; };
+            panelExpandedEntry.OnEntryValueChanged.Subscribe((_, _) => { applyState(); });
+            Button_Switch.OnClick += () => { panelExpandedEntry.Value = !panelExpandedEntry.Value; };
 
             panel.onCloseAction = () => { panelExpandedEntry.Value = false; };
             applyState();
@@ -215,7 +219,7 @@ namespace MQOD
                 Vector3 vec3 = MQOD.Instance.UIInst.Main.Rect.localPosition;
                 panel.Rect.localPosition =
                     new Vector3(vec3.x + MQOD.Instance.UIInst.Main.Rect.sizeDelta.x, vec3.y, vec3.z);
-                Switch.ButtonText.text = panelExpandedEntry.Value ? "Expanded" : "Hidden";
+                Button_Switch.ButtonText.text = panelExpandedEntry.Value ? "Expanded" : "Hidden";
                 SwitchLabel.color = (Color)(panelExpandedEntry.Value ? colorState1 : colorState2);
             }
         }
